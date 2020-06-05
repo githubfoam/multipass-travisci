@@ -59,7 +59,7 @@ matrix:
               echo "Waiting $VM_NAME VM to be running"
           done
         - |
-          if [ "$( multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
+          if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
             echo "VM: $VM_NAME is Provisioned"
             return 1
           else
@@ -67,7 +67,7 @@ matrix:
             return 0
           fi
         - start=$(date +%s)
-        - multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
         - end=$(date +%s) &&  runtime=$((end-start))
         - echo $runtime
         - sudo multipass list
