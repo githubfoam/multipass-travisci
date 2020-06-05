@@ -4,11 +4,78 @@ dist: bionic
 env:
   global:
   # auto vagrant installation
+  # - VAGRANT_CURRENT_VERSION="$(curl -s https://checkpoint-api.hashicorp.com/v1/check/vagrant | jq -r -M '.current_version')"
+  # # auto vagrant installation
+  # - VAGRANT_VERSION="2.2.9"
+  # - KUBECTL_VERSION=1.18.3
+  # - KUBERNETES_VERSION=1.18.3
+  # - MINIKUBE_VERSION=1.8.3
+  # - CHANGE_MINIKUBE_NONE_USER=true #(bool) automatically change ownership of ~/.minikube to the value of $SUDO_USER https://minikube.sigs.k8s.io/docs/handbook/config/
+  # - MINIKUBE_WANTREPORTERRORPROMPT=false
+  # - MINIKUBE_WANTUPDATENOTIFICATION=false #(bool) sets whether the user wants an update notification for new minikube versions https://minikube.sigs.k8s.io/docs/handbook/config
+  # - MINIKUBE_HOME=$HOME #(string) sets the path for the .minikube directory that minikube uses for state/configuration. Please note: this is used only by minikube https://minikube.sigs.k8s.io/docs/handbook/config
+  # - KUBECONFIG=$HOME/.kube/config
 
 notifications:
   slack:
     on_failure: always
 
+fleet_script_microk8s_istio_tasks : &fleet_script_microk8s_istio_tasks #If you are running minikube within a VM, consider using --driver=none
+      script:
+          # - sudo snap install microk8s --classic --channel=1.18/stable
+          - sudo usermod -a -G microk8s $USER #add your current user to the group and gain access to the .kube caching directory
+          # - sudo chown -f -R $USER ~/.kube
+          # - su - $USER # re-enter the session for the group update to take place
+          - sudo microk8s status --wait-ready #Check the status
+          - |
+            echo "Waiting for Kubernetes to be ready ..."
+            for i in {1..150}; do # Timeout after 5 minutes, 150x2=300 secs
+              watch -d sudo microk8s kubectl get all --all-namespaces
+              sleep 2
+            done
+          - sudo microk8s kubectl get nodes
+          - sudo microk8s kubectl get services
+          # - alias kubectl='microk8s kubectl' #add an alias (append to ~/.bash_aliases)
+          # - sudo microk8s  kubectl create deployment my-dep --image=busybox
+          - sudo microk8s kubectl get pods #Check the status
+          - yes | sudo microk8s enable istio     #Enforce mutual TLS authentication (https://bit.ly/2KB4j04) between sidecars? If unsure, choose N. (y/N):
+          #Istio needs to inject sidecars to the pods of your deployment
+          #In microk8s auto-injection is supported  label the namespace you will be using with istion-injection=enabled
+          - sudo microk8s kubectl label namespace default istio-injection=enabled
+          - wget https://raw.githubusercontent.com/istio/istio/release-1.0/samples/bookinfo/platform/kube/bookinfo.yaml  #the bookinfo example from the v1.0 Istio release
+          - sudo microk8s.kubectl create -f bookinfo.yaml
+          #reach the services using the ClusterIP they have
+          #for example get to the productpage in the above example by pointing our browser to 10.152.183.59:9080
+          - sudo microk8s kubectl get svc
+          - wget https://raw.githubusercontent.com/istio/istio/release-1.0/samples/bookinfo/networking/bookinfo-gateway.yaml #exposing the services via NodePort:
+          - sudo microk8s kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}' 31380 #get to the productpage through ingress
+          - curl http://localhost:31380/productpage
+          # - nc http://localhost:31380/productpage
+          - sudo microk8s kubectl -n istio-system get svc grafana
+          - sudo microk8s kubectl -n istio-system get svc prometheus
+          - sudo microk8s kubectl -n istio-system get service/jaeger-query
+          - sudo microk8s kubectl -n istio-system get servicegraph
+          # -  sudo microk8s enable dns cilium dashboard fluentd helm helm3 ingress istio jaeger knative kubeflow metallb metrics-server prometheus rbac registry storage #Use add-ons istio
+          # - microk8s stop
+          # - microk8s start
+          # - sudo microk8s enable dns dashboard registry #Turn on standard services
+          # - watch microk8s.kubectl get all --all-namespaces #check deployment progress
+          - echo "=========================================================================================="
+          - sudo microk8s kubectl version
+          - sudo microk8s kubectl version --client #the version of the client
+          - sudo microk8s kubectl cluster-info
+          - echo "=========================================================================================="
+          - |
+            echo "Waiting for Kubernetes to be ready ..."
+            for i in {1..150}; do # Timeout after 5 minutes, 150x2=300 secs
+              if sudo microk8s kubectl get pods --namespace=kube-system | grep Running ; then
+                break
+              fi
+              sleep 2
+            done
+          - sudo microk8s kubectl get all --all-namespaces
+          - sudo microk8s kubectl run nginx --image nginx --replicas 3
+          - sudo microk8s kubectl get all --all-namespaces
 
 fleet_script_tasks : &fleet_script_tasks
       script:
@@ -22,44 +89,13 @@ matrix:
   fast_finish: true
   include:
 
-
-    - name: "multipass Python 3.7 on bionic"
+    - name: "multipass VM microk8s istio Python 3.7 on bionic" #OK
       dist: bionic
       addons:
         snaps:
           - name: multipass
             confinement: classic # or devmode
-            channel: latest/stable # will be passed to --channel flag
-      language: python
-      python: 3.7
-      before_install:
-        - pip3 install virtualenv
-        - virtualenv -p $(which python3) ~venvpy3
-        - source ~venvpy3/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      script:
-        - ls -l /var/snap/multipass/common/multipass_socket #
-        - snap info --verbose multipass
-      after_success:
-        - deactivate
-
-
-
-
-
-# #============================================================================ multiarch linux ============================================================================
-
-
-    - name: "MicroK8s Multipass edge Python 3.7 on xenial arm64"
-      os: linux
-      arch: arm64
-      dist: xenial
-      addons:
-        snaps:
-          - name: multipass
-            confinement: classic # or devmode
-            channel: latest/edge # will be passed to --channel flag
+            # channel: latest/edge # will be passed to --channel flag
           - name: microk8s
             confinement: classic # or devmode
             channel: latest/stable # will be passed to --channel flag
@@ -71,10 +107,36 @@ matrix:
         - source ~venvpy3/bin/activate
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
+      <<: *fleet_script_microk8s_istio_tasks
       script:
-        - snap info --verbose multipass
-        - snap info --verbose  microk8s #All the currently available channels
-
-
+        - snap info multipass
+        # foo1                 Running           192.168.64.3     Ubuntu 18.04 LTS
+        # foo                     Running           192.168.64.2     Ubuntu 18.04 LTS
+        - sudo  multipass launch --name foo1
+        - sudo  multipass launch --name foo
+        # - root@192.168.64.3 #added my ~/.ssh/id_rsa.pub to the end of ~root/.ssh/authorized_keys and tested root access with ssh
+        - multipass list
+        - sudo multipass exec foo1 -- free -m
+        - sudo multipass exec foo1 -- cat /proc/meminfo
+        - sudo multipass exec foo1-- uname -a
+        - sudo multipass exec foo1 -- 'curl -sfL https://get.k3s.io | sh -' #Installing k3s
+        - sudo multipass exec foo1 -- sudo kubectl get nodes
+        - sudo multipass exec foo1 -- cat /var/lib/rancher/k3s/server/node-token
+        # - sudo multipass exec foo -- 'curl -sfL https://get.k3s.io | K3S_URL=https://192.168.64.3:6443 K3S_TOKEN=`cat token` sh -' #Adding a new node
+        # - sudo multipass exec foo1 -- sudo kubectl get nodes
+        # - sudo multipass exec foo1 -- sudo cat /etc/rancher/k3s/k3s.yaml #get the kubeconfig
+        # - sed -i.bak -e 's/127.0.0.1:6443/192.168.64.3/g' myk3sconfig #save that locally and just change the “server” line to match our master node
+        # - "!cat"
+        # - export KUBECONFIG=$(pwd)/myk3sconfig
+        # - kubectl get nodes
+        # - kubectl api-resources --insecure-skip-tls-verify
+        # - sudo multipass exec foo -- 'sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config'
+        # - sudo multipass exec foo -- 'sudo chmod 644 ~/.kube/config
+        # - sudo multipass exec foo -- 'kubectl get pods --all-namespaces
+        # - sudo  multipass launch --name microk8s-vm --mem 4G --disk 40G #Launch a Multipass instance
+        # - sudo multipass list
+        # - sudo multipass exec microk8s-vm -- sudo snap install microk8s --classic --channel=1.18/stable
+        # - sudo multipass exec microk8s-vm -- sudo microk8s status --wait-ready
+        # - sudo multipass exec microk8s-vm -- sudo microk8s enable dns dashboard registry
       after_success:
         - deactivate
