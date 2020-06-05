@@ -22,6 +22,29 @@ matrix:
   fast_finish: true
   include:
 
+    - name: "multipass cloud-init Python 3.7 on bionic"
+      dist: bionic
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            # channel: latest/edge # will be passed to --channel flag
+      language: python
+      python: 3.7
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      script:
+        - ls -l /var/snap/multipass/common/multipass_socket #
+        - snap info multipass
+        - source instance.env
+        - source src/vm.bash
+      after_success:
+        - deactivate
+
 
     - name: "multipass Python 3.7 on bionic" #OK
       dist: bionic
@@ -50,7 +73,6 @@ matrix:
 
 
 # #============================================================================ multiarch linux ============================================================================
-
 
     - name: "MicroK8s Multipass edge Python 3.7 on xenial arm64"
       os: linux
