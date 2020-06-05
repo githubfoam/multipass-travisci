@@ -1,7 +1,8 @@
 # multipass-travisci
 multipass pipeline
 
-
+Travis (.com)  branch:
+[![Build Status](https://travis-ci.com/githubfoam/multipass-travisci.svg?branch=master)](https://travis-ci.com/githubfoam/multipass-travisci)  
 
 ~~~~
 Using libvirt in Multipass
