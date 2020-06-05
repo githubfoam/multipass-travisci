@@ -42,6 +42,7 @@ matrix:
         - snap info multipass
         - source instance.env
         - source src/multipass/vm.bash
+        - sudo multipass list
       after_success:
         - deactivate
 #
