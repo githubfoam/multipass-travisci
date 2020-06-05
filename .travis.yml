@@ -53,10 +53,10 @@ matrix:
         - |
           if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
             echo "VM: $VM_NAME is Provisioned"
-            return check_vm_exists==1
+            check_vm_exists=1
           else
             echo "VM: $VM_NAME Yet To Be Provisioned."
-            return check_vm_exists==0
+            check_vm_exists=0
           fi
         # - check_vm_exists || return 1
         - echo "$VM_NAME  provision started"
@@ -72,11 +72,13 @@ matrix:
               sleep 5
               echo "Waiting $VM_NAME VM to be running"
           done
-        - sudo multipass exec "$VM_NAME" -- tail  -f  /var/log/cloud-init-output.log
+        - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
         - sudo multipass list
         # - sudo multipass shell "$VM_NAME"
         - sudo multipass delete "$VM_NAME" && sudo multipass purge
         - echo "$VM_NAME destroyed"
+        - sudo multipass list
+
       after_success:
         - deactivate
 #
