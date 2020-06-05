@@ -53,7 +53,7 @@ matrix:
         - |
           while :
           do
-              status=$(multipass ls | grep "$VM_NAME"  |  awk '{print $2}')
+              status=$(sudo multipass ls | grep "$VM_NAME"  |  awk '{print $2}')
               [ ! $status = "Running"  ] || break
               sleep 5
               echo "Waiting $VM_NAME VM to be running"
