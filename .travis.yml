@@ -51,6 +51,20 @@ matrix:
         - export BASH_COMMONS_SRC_DIR="$SCRIPT_DIR/src"
         # - source src/multipass/vm.bash
         - |
+          if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
+            echo "VM: $VM_NAME is Provisioned"
+            return check_vm_exists=1
+          else
+            echo "VM: $VM_NAME Yet To Be Provisioned."
+            return check_vm_exists=0
+          fi
+        - check_vm_exists || return 1
+        - echo "$VM_NAME  provision started"
+        - start=$(date +%s)
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
+        - end=$(date +%s) &&  runtime=$((end-start))
+        - echo $runtime
+        - |
           while :
           do
               status=$(sudo multipass ls | grep "$VM_NAME"  |  awk '{print $2}')
@@ -58,18 +72,7 @@ matrix:
               sleep 5
               echo "Waiting $VM_NAME VM to be running"
           done
-        - |
-          if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
-            echo "VM: $VM_NAME is Provisioned"
-            return 1
-          else
-            echo "VM: $VM_NAME Yet To Be Provisioned."
-            return 0
-          fi
-        - start=$(date +%s)
-        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
-        - end=$(date +%s) &&  runtime=$((end-start))
-        - echo $runtime
+        - sudo multipass exec "$VM_NAME" -- tail  -f  /var/log/cloud-init-output.log 
         - sudo multipass list
       after_success:
         - deactivate
