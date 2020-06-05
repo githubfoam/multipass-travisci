@@ -115,10 +115,10 @@ matrix:
         - sudo  multipass launch --name foo1
         - sudo  multipass launch --name foo
         # - root@192.168.64.3 #added my ~/.ssh/id_rsa.pub to the end of ~root/.ssh/authorized_keys and tested root access with ssh
-        - multipass list
+        - sudo multipass list
         - sudo multipass exec foo1 -- free -m
         - sudo multipass exec foo1 -- cat /proc/meminfo
-        - sudo multipass exec foo1-- uname -a
+        - sudo multipass exec foo1 -- uname -a
         - sudo multipass exec foo1 -- 'curl -sfL https://get.k3s.io | sh -' #Installing k3s
         - sudo multipass exec foo1 -- sudo kubectl get nodes
         - sudo multipass exec foo1 -- cat /var/lib/rancher/k3s/server/node-token
