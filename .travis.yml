@@ -84,7 +84,7 @@ matrix:
       language: python
       python: 3.7
       env:
-        - VM_NAME="VM01 "
+        - VM_NAME="VM01"
         - CPU="1"
         - MEMORY="4G"
         - DISK="5G"
@@ -107,7 +107,7 @@ matrix:
           fi
         - echo "$VM_NAME  provision started"
         - start=$(date +%s)
-        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" 19.10 --cloud-init "$CLOUD_INIT_FILE"
         - end=$(date +%s) &&  runtime=$((end-start))
         - echo $runtime
         - |
