@@ -187,8 +187,8 @@ matrix:
     - name: "multipass cloud-init jenkins Python 3.7 on bionic arm64"
       os: linux
       arch: arm64
-      # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
-      dist: bionic
+      dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
+      # dist: bionic
       addons:
         snaps:
           - name: multipass
