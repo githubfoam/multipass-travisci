@@ -119,8 +119,9 @@ matrix:
               echo "Waiting $VM_NAME VM to be running"
           done
         - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
-        - sudo multipass exec "$VM_NAME" -- service jenkins status && exit #Verify Jenkins is running using the service command
+        - sudo multipass exec "$VM_NAME" -- service jenkins status && sleep 5 #Verify Jenkins is running using the service command
         - sudo multipass exec "$VM_NAME" -- cat /var/lib/jenkins/secrets/initialAdminPassword #View the initialAdminPassword for Jenkins install
+        - MULTIPASS_VM_IP=$(multipass info $VM_NAME | grep 'IPv4' | awk '{print $2}') && echo $MULTIPASS_VM_IP
         - sudo multipass list
         # - sudo multipass shell "$VM_NAME"
         - sudo multipass delete "$VM_NAME" && sudo multipass purge
