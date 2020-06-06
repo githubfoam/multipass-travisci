@@ -128,32 +128,32 @@ matrix:
     #   after_success:
     #     - deactivate
 
-    #https://multipass.run/docs/launch-command
-    - name: "multipass cloud-init jenkins Python 3.7 on bionic"
-      dist: bionic
-      addons:
-        snaps:
-          - name: multipass
-            confinement: classic # or devmode
-            channel: latest/stable # will be passed to --channel flag
-      language: python
-      python: 3.7
-      # env:
-      #   - VM_NAME="VM01"
-      #   - CPU="1"
-      #   - MEMORY="4G"
-      #   - DISK="5G"
-      #   - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
-      #   - VM_IMAGE="20.04"
-      before_install:
-        - pip3 install virtualenv
-        - virtualenv -p $(which python3) ~venvpy3
-        - source ~venvpy3/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      <<: *fleet_script_multipass_cloudinit_jenkins_tasks
-      after_success:
-        - deactivate
+    # #https://multipass.run/docs/launch-command
+    # - name: "multipass cloud-init jenkins Python 3.7 on bionic"
+    #   dist: bionic
+    #   addons:
+    #     snaps:
+    #       - name: multipass
+    #         confinement: classic # or devmode
+    #         channel: latest/stable # will be passed to --channel flag
+    #   language: python
+    #   python: 3.7
+    #   # env:
+    #   #   - VM_NAME="VM01"
+    #   #   - CPU="1"
+    #   #   - MEMORY="4G"
+    #   #   - DISK="5G"
+    #   #   - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
+    #   #   - VM_IMAGE="20.04"
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_multipass_cloudinit_jenkins_tasks
+    #   after_success:
+    #     - deactivate
 
 
 
@@ -210,8 +210,9 @@ matrix:
         - pip3 install virtualenv
         - virtualenv -p $(which python3) ~venvpy3
         - source ~venvpy3/bin/activate
-        - kvm-ok #check whether the KVM is installed
-        - sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils -qqy
+        - sudo apt-get install -qqy cpu-checker #kvm-ok
+        - sudo kvm-ok #check whether the KVM is installed
+        - sudo apt-get install -qqy qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
       <<: *fleet_script_multipass_cloudinit_jenkins_tasks
@@ -219,34 +220,34 @@ matrix:
         - deactivate
 
 
-    - name: "multipass microk8s  edge Python 3.7 on bionic arm64"
-      os: linux
-      arch: arm64
-      # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
-      dist: bionic
-      addons:
-        snaps:
-          - name: multipass
-            confinement: classic # or devmode
-            channel: latest/beta # will be passed to --channel flag
-          - name: microk8s
-            confinement: classic # or devmode
-            channel: latest/stable # will be passed to --channel flag
-      language: python
-      python: 3.7
-      before_install:
-        - pip3 install virtualenv
-        - virtualenv -p $(which python3) ~venvpy3
-        - source ~venvpy3/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      <<: *fleet_script_tasks
-      <<: *fleet_script_multipass_cloudinit_jenkins_tasks
-      script:
-        - snap info multipass
-        - snap info microk8s #All the currently available channels
-      after_success:
-        - deactivate
+    # - name: "multipass microk8s  beta Python 3.7 on bionic arm64"
+    #   os: linux
+    #   arch: arm64
+    #   # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
+    #   dist: bionic
+    #   addons:
+    #     snaps:
+    #       - name: multipass
+    #         confinement: classic # or devmode
+    #         channel: latest/beta # will be passed to --channel flag
+    #       - name: microk8s
+    #         confinement: classic # or devmode
+    #         channel: latest/stable # will be passed to --channel flag
+    #   language: python
+    #   python: 3.7
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_multipass_cloudinit_jenkins_tasks
+    #   script:
+    #     - snap info multipass
+    #     - snap info microk8s #All the currently available channels
+    #   after_success:
+    #     - deactivate
 
 
 # =============================================macOS=============================================
