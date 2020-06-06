@@ -157,11 +157,11 @@ matrix:
         - echo $TOKEN
         - IP=`sudo multipass list --format csv | grep "^node1" | cut -d, -f3`
         - echo $IP
-        - COUNT=4 &&  echo $COUNT        
+        - COUNT=4 &&  echo $COUNT
         - |
           for i in `seq 2 $COUNT`
           do
-              sudo multipass launch --name node$i
+              sudo multipass launch --name node$i | tee /dev/null
               sudo multipass exec node$i -- sudo sh -c "curl -sfL https://get.k3s.io | K3S_URL=https://$IP:6443 K3S_TOKEN=$TOKEN sh -"
           done
         - sleep 10
