@@ -152,7 +152,7 @@ matrix:
       script:
         # - cat $HOME/.ssh/id_rsa.pub
         - sudo multipass launch --name node1
-        - sudo multipass exec node1 -- sh -c "curl -sfL https://get.k3s.io | sh -"
+        - sudo multipass exec node1 -- sudo sh -c "curl -sfL https://get.k3s.io | sh -"
         - TOKEN=`multipass exec node1 -- sudo cat /var/lib/rancher/k3s/server/node-token`
         - echo $TOKEN
         - IP=`multipass list --format csv | grep "^node1" | cut -d, -f3`
