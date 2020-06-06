@@ -22,60 +22,149 @@ matrix:
   fast_finish: true
   include:
 
-    # - name: "multipass cloud-init Python 3.7 on bionic" #OK
-    #   dist: bionic
-    #   addons:
-    #     snaps:
-    #       - name: multipass
-    #         confinement: classic # or devmode
-    #         channel: latest/stable # will be passed to --channel flag
-    #   language: python
-    #   python: 3.7
-    #   env:
-    #     - VM_NAME="VM01"
-    #     - CPU="1"
-    #     - MEMORY="4G"
-    #     - DISK="5G"
-    #     - CLOUD_INIT_FILE="config/cloud-init.yaml"
-    #   before_install:
-    #     - pip3 install virtualenv
-    #     - virtualenv -p $(which python3) ~venvpy3
-    #     - source ~venvpy3/bin/activate
-    #   <<: *fleet_install_tasks
-    #   <<: *fleet_script_tasks
-    #   script:
-    #     - ls -l /var/snap/multipass/common/multipass_socket #
-    #     - |
-    #       if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
-    #         echo "VM: $VM_NAME is Provisioned"
-    #       else
-    #         echo "VM: $VM_NAME Yet To Be Provisioned."
-    #       fi
-    #     - echo "$VM_NAME  provision started"
-    #     - start=$(date +%s)
-    #     - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
-    #     - end=$(date +%s) &&  runtime=$((end-start))
-    #     - echo $runtime
-    #     - |
-    #       while :
-    #       do
-    #           status=$(sudo multipass ls | grep "$VM_NAME"  |  awk '{print $2}')
-    #           [ ! $status = "Running"  ] || break
-    #           sleep 5
-    #           echo "Waiting $VM_NAME VM to be running"
-    #       done
-    #     - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
-    #     - sudo multipass list
-    #     # - sudo multipass shell "$VM_NAME"
-    #     - sudo multipass delete "$VM_NAME" && sudo multipass purge
-    #     - echo "$VM_NAME destroyed"
-    #     - sudo multipass list
-    #   after_success:
-    #     - deactivate
+    - name: "multipass cloud-init Python 3.7 on bionic" #OK
+      dist: bionic
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      env:
+        - VM_NAME="VM01"
+        - CPU="1"
+        - MEMORY="4G"
+        - DISK="5G"
+        - CLOUD_INIT_FILE="config/cloud-init.yaml"
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      script:
+        - ls -l /var/snap/multipass/common/multipass_socket #
+        - |
+          if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
+            echo "VM: $VM_NAME is Provisioned"
+          else
+            echo "VM: $VM_NAME Yet To Be Provisioned."
+          fi
+        - echo "$VM_NAME  provision started"
+        - start=$(date +%s)
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
+        - end=$(date +%s) &&  runtime=$((end-start))
+        - echo $runtime
+        - |
+          while :
+          do
+              status=$(sudo multipass ls | grep "$VM_NAME"  |  awk '{print $2}')
+              [ ! $status = "Running"  ] || break
+              sleep 5
+              echo "Waiting $VM_NAME VM to be running"
+          done
+        - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
+        - sudo multipass list
+        # - sudo multipass shell "$VM_NAME"
+        - sudo multipass delete "$VM_NAME" && sudo multipass purge
+        - echo "$VM_NAME destroyed"
+        - sudo multipass list
+      after_success:
+        - deactivate
+
+    #https://multipass.run/docs/launch-command
+    - name: "multipass cloud-init jenkins Python 3.7 on bionic"
+      dist: bionic
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      env:
+        - VM_NAME="VM01"
+        - CPU="1"
+        - MEMORY="4G"
+        - DISK="5G"
+        - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
+        - VM_IMAGE="20.04"
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      script:
+        - sudo multipass find #listing of all the available Ubuntu images
+        - ls -l /var/snap/multipass/common/multipass_socket #
+        - |
+          if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
+            echo "VM: $VM_NAME is Provisioned"
+          else
+            echo "VM: $VM_NAME Yet To Be Provisioned."
+          fi
+        - echo "$VM_NAME  provision started"
+        - start=$(date +%s)
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" "$VM_IMAGE" --cloud-init "$CLOUD_INIT_FILE"
+        - end=$(date +%s) &&  runtime=$((end-start))
+        - echo $runtime
+        - |
+          while :
+          do
+              status=$(sudo multipass ls | grep "$VM_NAME"  |  awk '{print $2}')
+              [ ! $status = "Running"  ] || break
+              sleep 5
+              echo "Waiting $VM_NAME VM to be running"
+          done
+        - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
+        # - sudo multipass exec "$VM_NAME" -- service jenkins status #Verify Jenkins is running using the service command
+        - sudo multipass exec "$VM_NAME" -- cat /var/lib/jenkins/secrets/initialAdminPassword #View the initialAdminPassword for Jenkins install
+        - MULTIPASS_VM_IP=$(multipass info $VM_NAME | grep 'IPv4' | awk '{print $2}') && echo $MULTIPASS_VM_IP
+        - sudo multipass list
+        # - sudo multipass shell "$VM_NAME"
+        - sudo multipass delete "$VM_NAME" && sudo multipass purge
+        - echo "$VM_NAME destroyed"
+        - sudo multipass list
+      after_success:
+        - deactivate
+
+
+
+    - name: "multipass Python 3.7 on bionic" #OK
+      dist: bionic
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            # channel: latest/edge # will be passed to --channel flag
+      language: python
+      python: 3.7
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      script:
+        - ls -l /var/snap/multipass/common/multipass_socket #
+        # - groups | grep sudo
+        - snap info multipass
+      after_success:
+        - deactivate
+
+
+
+
+
+# # #============================================================================ multiarch linux ============================================================================
 
     # #https://multipass.run/docs/launch-command
     # - name: "multipass cloud-init jenkins Python 3.7 on bionic"
-    #   dist: bionic
+    #   os: linux
+    #   arch: arm64
+    #   dist: xenial
     #   addons:
     #     snaps:
     #       - name: multipass
@@ -130,146 +219,117 @@ matrix:
     #   after_success:
     #     - deactivate
 
-#
-#
-#     - name: "multipass Python 3.7 on bionic" #OK
-#       dist: bionic
-#       addons:
-#         snaps:
-#           - name: multipass
-#             confinement: classic # or devmode
-#             # channel: latest/edge # will be passed to --channel flag
-#       language: python
-#       python: 3.7
-#       before_install:
-#         - pip3 install virtualenv
-#         - virtualenv -p $(which python3) ~venvpy3
-#         - source ~venvpy3/bin/activate
-#       <<: *fleet_install_tasks
-#       <<: *fleet_script_tasks
-#       script:
-#         - ls -l /var/snap/multipass/common/multipass_socket #
-#         # - groups | grep sudo
-#         - snap info multipass
-#       after_success:
-#         - deactivate
-#
-#
-#
-#
-#
-# # #============================================================================ multiarch linux ============================================================================
-#
-#     - name: "MicroK8s Multipass edge Python 3.7 on xenial arm64"
-#       os: linux
-#       arch: arm64
-#       dist: xenial
-#       addons:
-#         # apt:
-#         #   sources:
-#         #     - deadsnakes
-#         #     - sourceline: 'ppa:ubuntu-toolchain-r/test'
-#         #     - sourceline: 'deb https://packagecloud.io/chef/stable/ubuntu/precise main'
-#         #       key_url: 'https://packagecloud.io/gpg.key'
-#         #   packages:
-#         #   - cmake
-#         #   - time
-#         snaps:
-#           - name: multipass
-#             confinement: classic # or devmode
-#             channel: latest/edge # will be passed to --channel flag
-#           # - name: microk8s
-#           #   confinement: classic # or devmode
-#           #   channel: latest/stable # will be passed to --channel flag
-#       language: python
-#       python: 3.7
-#       # env:
-#       #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
-#       # compiler:
-#       #  - gcc
-#       #  - clang
-#       before_install:
-#         - pip3 install virtualenv
-#         - virtualenv -p $(which python3) ~venvpy3
-#         - source ~venvpy3/bin/activate
-#       <<: *fleet_install_tasks
-#       <<: *fleet_script_tasks
-#       script:
-#         # - snap install multipass --beta #For architectures other than amd64, you’ll need the beta channel at the moment
-#         # - sudo snap install multipass --edge --beta # use the edge channel to get the latest development build
-#         # - sudo snap install microk8s --classic --channel=edge
-#         - snap info multipass
-#         - snap info microk8s #All the currently available channels
-#         # - sudo microk8s stop
-#         # - sudo rm -rf /var/snap/microk8s/common/var/lib/containerd
-#         # - ls -l /var/snap/microk8s/current/args/containerd-template.toml
-#         # - sudo sed 's%snapshotter = "overlayfs"%snapshotter = "zfs"%g' /var/snap/microk8s/current/args/containerd-template.toml
-#         # - sudo zfs create -o mountpoint=/var/snap/microk8s/common/var/lib/containerd/io.containerd.snapshotter.v1.zfs $POOL/containerd
-#         # - sudo microk8s start
-#         # - sudo microk8s status
-#
-#       after_success:
-#         - deactivate
-#
-#
-#
-# #   # =============================================macOS=============================================
 
-    #The default backend on macOS is hyperkit, wrapping Apple’s Hypervisor.framework
-    #You need macOS Yosemite, version 10.10.3 or later installed on a 2010 or newer Mac
-    #https://docs.travis-ci.com/user/reference/osx/#macos-version
-    # https://multipass.run/docs/installing-on-macos
-    # https://microk8s.io/#get-started
-    - name: "Installing Multipass on macOS 10.15.4 osx xcode11.5"
-      os: osx
-      osx_image:
-        - xcode11.4
-        # - xcode11.3
-        # - xcode11.2
-        # - xcode11.1
-        # - xcode11
-      # osx_image: xcode11.5 #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
-      language: shell
-      # addons:
-      #   homebrew:
-          # casks: #Installing Casks
-          # # - dotnet-sdk #OK
-          # - multipass
+    - name: "MicroK8s Multipass edge Python 3.7 on xenial arm64"
+      os: linux
+      arch: arm64
+      dist: xenial
       addons:
-        homebrew:
-      #     # brewfile: Brewfile.travis
-      #     # packages:
-      #     #   - multipass
-      #     # taps: homebrew/cask-versions
-          casks: # Installing Casks
-            - multipass
-          update: true
+        # apt:
+        #   sources:
+        #     - deadsnakes
+        #     - sourceline: 'ppa:ubuntu-toolchain-r/test'
+        #     - sourceline: 'deb https://packagecloud.io/chef/stable/ubuntu/precise main'
+        #       key_url: 'https://packagecloud.io/gpg.key'
+        #   packages:
+        #   - cmake
+        #   - time
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/edge # will be passed to --channel flag
+          # - name: microk8s
+          #   confinement: classic # or devmode
+          #   channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      # env:
+      #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
+      # compiler:
+      #  - gcc
+      #  - clang
       before_install:
-        - pip install virtualenv
-        - virtualenv -p $(which python2) ~venvpy2
-        - source ~venvpy2/bin/activate
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
       script:
-        - multipass version
-        - sh-keygen -b 2048 -f ~/.ssh/multipass -t rsa -q -N "" #create a ssh key
-        - cat ~/.ssh/multipass.pub #Copy the contents of the public key to the cloud-init file
-        - sudo multipass launch --name ubuntu-lts
-        - sudo multipass exec ubuntu-lts -- lsb_release -a
-        - sudo multipass launch -n ubuntu-lts-custom --cloud-init "config/cloud-init-macos.yaml"
-        - sudo multipass list
-        # - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" #Install Homebrew
-        # - brew cask install multipass
-        # - multipass version
-        # - brew list --versions
-        # - sudo multipass launch --name microk8s-vm --mem 4G --disk 40G
-        # - sudo multipass shell microk8s-vm #Enter the VM instance
-        # - sudo snap install microk8s --classic
-        # - sudo microk8s status --wait-ready
-        # - sudo microk8s enable dns dashboard registry #Turn on standard services
+        # - snap install multipass --beta #For architectures other than amd64, you’ll need the beta channel at the moment
+        # - sudo snap install multipass --edge --beta # use the edge channel to get the latest development build
+        # - sudo snap install microk8s --classic --channel=edge
+        - snap info multipass
+        - snap info microk8s #All the currently available channels
+        # - sudo microk8s stop
+        # - sudo rm -rf /var/snap/microk8s/common/var/lib/containerd
+        # - ls -l /var/snap/microk8s/current/args/containerd-template.toml
+        # - sudo sed 's%snapshotter = "overlayfs"%snapshotter = "zfs"%g' /var/snap/microk8s/current/args/containerd-template.toml
+        # - sudo zfs create -o mountpoint=/var/snap/microk8s/common/var/lib/containerd/io.containerd.snapshotter.v1.zfs $POOL/containerd
+        # - sudo microk8s start
+        # - sudo microk8s status
+
       after_success:
-        - brew cask uninstall multipass
         - deactivate
+
+
+
+# #   # =============================================macOS=============================================
+
+    # #The default backend on macOS is hyperkit, wrapping Apple’s Hypervisor.framework
+    # #You need macOS Yosemite, version 10.10.3 or later installed on a 2010 or newer Mac
+    # #https://docs.travis-ci.com/user/reference/osx/#macos-version
+    # # https://multipass.run/docs/installing-on-macos
+    # # https://microk8s.io/#get-started
+    # - name: "Installing Multipass on macOS 10.15.4 osx xcode11.5"
+    #   os: osx
+    #   osx_image:
+    #     - xcode11.4
+    #     # - xcode11.3
+    #     # - xcode11.2
+    #     # - xcode11.1
+    #     # - xcode11
+    #   # osx_image: xcode11.5 #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
+    #   language: shell
+    #   # addons:
+    #   #   homebrew:
+    #       # casks: #Installing Casks
+    #       # # - dotnet-sdk #OK
+    #       # - multipass
+    #   addons:
+    #     homebrew:
+    #   #     # brewfile: Brewfile.travis
+    #   #     # packages:
+    #   #     #   - multipass
+    #   #     # taps: homebrew/cask-versions
+    #       casks: # Installing Casks
+    #         - multipass
+    #       update: true
+    #   before_install:
+    #     - pip install virtualenv
+    #     - virtualenv -p $(which python2) ~venvpy2
+    #     - source ~venvpy2/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   script:
+    #     - multipass version
+    #     - sh-keygen -b 2048 -f ~/.ssh/multipass -t rsa -q -N "" #create a ssh key
+    #     - cat ~/.ssh/multipass.pub #Copy the contents of the public key to the cloud-init file
+    #     - sudo multipass launch --name ubuntu-lts
+    #     - sudo multipass exec ubuntu-lts -- lsb_release -a
+    #     - sudo multipass launch -n ubuntu-lts-custom --cloud-init "config/cloud-init-macos.yaml"
+    #     - sudo multipass list
+    #     # - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" #Install Homebrew
+    #     # - brew cask install multipass
+    #     # - multipass version
+    #     # - brew list --versions
+    #     # - sudo multipass launch --name microk8s-vm --mem 4G --disk 40G
+    #     # - sudo multipass shell microk8s-vm #Enter the VM instance
+    #     # - sudo snap install microk8s --classic
+    #     # - sudo microk8s status --wait-ready
+    #     # - sudo microk8s enable dns dashboard registry #Turn on standard services
+    #   after_success:
+    #     - brew cask uninstall multipass
+    #     - deactivate
 
 
 
