@@ -226,7 +226,8 @@ matrix:
     - name: "MicroK8s Multipass edge Python 3.7 on xenial arm64"
       os: linux
       arch: arm64
-      dist: xenial
+      # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
+      dist: bionic
       addons:
         # apt:
         #   sources:
@@ -278,61 +279,65 @@ matrix:
 
 # #   # =============================================macOS=============================================
 
-    # #The default backend on macOS is hyperkit, wrapping Apple’s Hypervisor.framework
-    # #You need macOS Yosemite, version 10.10.3 or later installed on a 2010 or newer Mac
-    # #https://docs.travis-ci.com/user/reference/osx/#macos-version
-    # # https://multipass.run/docs/installing-on-macos
-    # # https://microk8s.io/#get-started
-    # - name: "Installing Multipass on macOS 10.15.4 osx xcode11.5"
-    #   os: osx
-    #   osx_image:
-    #     - xcode11.4
-    #     # - xcode11.3
-    #     # - xcode11.2
-    #     # - xcode11.1
-    #     # - xcode11
-    #   # osx_image: xcode11.5 #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
-    #   language: shell
-    #   # addons:
-    #   #   homebrew:
-    #       # casks: #Installing Casks
-    #       # # - dotnet-sdk #OK
-    #       # - multipass
-    #   addons:
-    #     homebrew:
-    #   #     # brewfile: Brewfile.travis
-    #   #     # packages:
-    #   #     #   - multipass
-    #   #     # taps: homebrew/cask-versions
-    #       casks: # Installing Casks
-    #         - multipass
-    #       update: true
-    #   before_install:
-    #     - pip install virtualenv
-    #     - virtualenv -p $(which python2) ~venvpy2
-    #     - source ~venvpy2/bin/activate
-    #   <<: *fleet_install_tasks
-    #   <<: *fleet_script_tasks
-    #   script:
-    #     - multipass version
-    #     - sh-keygen -b 2048 -f ~/.ssh/multipass -t rsa -q -N "" #create a ssh key
-    #     - cat ~/.ssh/multipass.pub #Copy the contents of the public key to the cloud-init file
-    #     - sudo multipass launch --name ubuntu-lts
-    #     - sudo multipass exec ubuntu-lts -- lsb_release -a
-    #     - sudo multipass launch -n ubuntu-lts-custom --cloud-init "config/cloud-init-macos.yaml"
-    #     - sudo multipass list
-    #     # - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" #Install Homebrew
-    #     # - brew cask install multipass
-    #     # - multipass version
-    #     # - brew list --versions
-    #     # - sudo multipass launch --name microk8s-vm --mem 4G --disk 40G
-    #     # - sudo multipass shell microk8s-vm #Enter the VM instance
-    #     # - sudo snap install microk8s --classic
-    #     # - sudo microk8s status --wait-ready
-    #     # - sudo microk8s enable dns dashboard registry #Turn on standard services
-    #   after_success:
-    #     - brew cask uninstall multipass
-    #     - deactivate
+    #The default backend on macOS is hyperkit, wrapping Apple’s Hypervisor.framework
+    #You need macOS Yosemite, version 10.10.3 or later installed on a 2010 or newer Mac
+    #https://docs.travis-ci.com/user/reference/osx/#macos-version
+    # https://multipass.run/docs/installing-on-macos
+    # https://microk8s.io/#get-started
+    #https://multipass.run/docs/installing-on-macos
+    # https://brew.sh/
+    - name: "Installing Multipass on macOS 10.15.4 osx xcode11.5"
+      os: osx
+      osx_image:
+        - xcode11.5
+        # - xcode11.3
+        # - xcode11.2
+        # - xcode11.1
+        # - xcode11
+      # osx_image: xcode11.5 #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
+      language: shell
+      # addons:
+      #   homebrew:
+          # casks: #Installing Casks
+          # # - dotnet-sdk #OK
+          # - multipass
+      # addons:
+      #   homebrew:
+      # #     # brewfile: Brewfile.travis
+      # #     # packages:
+      # #     #   - multipass
+      # #     # taps: homebrew/cask-versions
+      #     casks: # Installing Casks
+      #       - multipass
+      #     update: true
+      before_install:
+        - pip install virtualenv
+        - virtualenv -p $(which python2) ~venvpy2
+        - source ~venvpy2/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      script:
+        - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+        - brew cask install multipass
+        - multipass version
+        # - sh-keygen -b 2048 -f ~/.ssh/multipass -t rsa -q -N "" #create a ssh key
+        # - cat ~/.ssh/multipass.pub #Copy the contents of the public key to the cloud-init file
+        # - sudo multipass launch --name ubuntu-lts
+        # - sudo multipass exec ubuntu-lts -- lsb_release -a
+        # - sudo multipass launch -n ubuntu-lts-custom --cloud-init "config/cloud-init-macos.yaml"
+        # - sudo multipass list
+        # - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" #Install Homebrew
+        # - brew cask install multipass
+        # - multipass version
+        # - brew list --versions
+        # - sudo multipass launch --name microk8s-vm --mem 4G --disk 40G
+        # - sudo multipass shell microk8s-vm #Enter the VM instance
+        # - sudo snap install microk8s --classic
+        # - sudo microk8s status --wait-ready
+        # - sudo microk8s enable dns dashboard registry #Turn on standard services
+      after_success:
+        - brew cask uninstall multipass
+        - deactivate
 
 
 
