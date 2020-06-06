@@ -151,7 +151,7 @@ matrix:
         - # - wget https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_amd64.zip
         - unzip terraform_$TERRAFORM_VERSION_linux_amd64.zip
         - sudo mv terraform /usr/local/bin/
-        - terraform --version        
+        - terraform --version
         - sudo make launch-server
         - sudo make launch-client
         - sudo make list
@@ -195,6 +195,10 @@ matrix:
       <<: *fleet_script_tasks
       <<: *fleet_script_arm_terraform_deploy_tasks
       script:
+        - egrep -c '(vmx|svm)' /proc/cpuinfo
+        - sudo apt-get install -qqy cpu-checker #kvm-ok
+        - sudo kvm-ok #check whether the KVM is installed
+        - sudo apt-get install -qqy qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils        
         - sudo apt-get install -qqy unzip
         - TERRAFORM_VERSION="0.12.26"
         - wget https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_$TERRAFORM_VERSION_linux_arm.zip
