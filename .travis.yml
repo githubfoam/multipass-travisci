@@ -162,8 +162,8 @@ matrix:
     - name: "multipass cloud-init jenkins Python 3.7 on bionic arm64"
       os: linux
       arch: arm64
-      dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
-      # dist: bionic
+      # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
+      dist: bionic
       addons:
         snaps:
           - name: multipass
@@ -185,7 +185,7 @@ matrix:
         - pip3 install virtualenv
         - virtualenv -p $(which python3) ~venvpy3
         - source ~venvpy3/bin/activate
-        - egrep -c '(vmx|svm)' /proc/cpuinfo
+        - egrep -c '(vmx|svm)' /proc/cpuinfo | echo "virtualization is  supported" | echo "virtualization is not supported"
         - sudo apt-get install -qqy cpu-checker #kvm-ok
         - sudo kvm-ok #check whether the KVM is installed
         - sudo apt-get install -qqy qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
@@ -285,12 +285,12 @@ matrix:
         - choco install wget
         - wget https://github.com/canonical/multipass/releases/download/v1.2.1/multipass-1.2.1+win-win64.exe
         - dir
-        - echo %cd%
-        - SET "PATH=%cd%;%PATH%"
-        - multipass-1.2.1+win-win64.exe version
-        - multipass version
-        - rename multipass-1.2.1+win-win64.exe multipass
-        - multipass version
+        # - echo %cd%
+        # - SET "PATH=%cd%;%PATH%"
+        # - multipass-1.2.1+win-win64.exe version
+        # - multipass version
+        # - rename multipass-1.2.1+win-win64.exe multipass
+        # - multipass version
         # - multipass set local.driver=virtualbox #Multipass defaults to using Hyper-V as it’s virtualization provider
         # - multipass launch --name microk8s-vm --mem 4G --disk 40G
         # - multipass shell microk8s-vm
