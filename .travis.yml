@@ -175,8 +175,15 @@ matrix:
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
       script:
-        # - snap info multipass
+        # Install Homebrew
+        - sudo apt-get install -qqy build-essential curl file git
         - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+        - test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+        - test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+        - test -r ~/.bash_profile && echo "eval" ($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
+        - echo "eval $($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+        - brew install hello
+        # Install Homebrew
         - brew cask install multipass
         - multipass version
         - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
@@ -232,6 +239,7 @@ matrix:
         - pip3 install virtualenv
         - virtualenv -p $(which python3) ~venvpy3
         - source ~venvpy3/bin/activate
+        - egrep -c '(vmx|svm)' /proc/cpuinfo
         - sudo apt-get install -qqy cpu-checker #kvm-ok
         - sudo kvm-ok #check whether the KVM is installed
         - sudo apt-get install -qqy qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
@@ -274,34 +282,34 @@ matrix:
 
 # =============================================macOS=============================================
 
-    #The default backend on macOS is hyperkit, wrapping Apple’s Hypervisor.framework
-    #You need macOS Yosemite, version 10.10.3 or later installed on a 2010 or newer Mac
-    #https://docs.travis-ci.com/user/reference/osx/#macos-version
-    # https://multipass.run/docs/installing-on-macos
-    # https://microk8s.io/#get-started
-    #https://multipass.run/docs/installing-on-macos
-    # https://brew.sh/
-    - name: "multipass on macOS 10.15.4 osx xcode11.5"
-      os: osx
-      osx_image: #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
-        - xcode11.5
-        # - xcode10
-        # - xcode9
-      language: shell
-      before_install:
-        - pip install virtualenv
-        - virtualenv -p $(which python2) ~venvpy2
-        - source ~venvpy2/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      script:
-        - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-        # - brew cask install multipass
-        # - multipass version
-        # - brew list --versions
-      after_success:
-        # - brew cask uninstall multipass
-        - deactivate
+    # #The default backend on macOS is hyperkit, wrapping Apple’s Hypervisor.framework
+    # #You need macOS Yosemite, version 10.10.3 or later installed on a 2010 or newer Mac
+    # #https://docs.travis-ci.com/user/reference/osx/#macos-version
+    # # https://multipass.run/docs/installing-on-macos
+    # # https://microk8s.io/#get-started
+    # #https://multipass.run/docs/installing-on-macos
+    # # https://brew.sh/
+    # - name: "multipass on macOS 10.15.4 osx xcode11.5"
+    #   os: osx
+    #   osx_image: #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
+    #     - xcode11.5
+    #     # - xcode10
+    #     # - xcode9
+    #   language: shell
+    #   before_install:
+    #     - pip install virtualenv
+    #     - virtualenv -p $(which python2) ~venvpy2
+    #     - source ~venvpy2/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   script:
+    #     - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+    #     # - brew cask install multipass
+    #     # - multipass version
+    #     # - brew list --versions
+    #   after_success:
+    #     # - brew cask uninstall multipass
+    #     - deactivate
 
 
 
@@ -330,6 +338,12 @@ matrix:
         # - echo "choco install multipass" #- multipass (exited -1) - Error while running 'C:\ProgramData\chocolatey\lib\multipass\tools\chocolateyinstall.ps1'
         - choco install wget
         - wget https://github.com/canonical/multipass/releases/download/v1.2.1/multipass-1.2.1+win-win64.exe
+        - dir
+        - echo %cd%
+        - SET "PATH=%cd%;%PATH%"
+        - multipass-1.2.1+win-win64.exe version
+        - multipass version
+        - rename multipass-1.2.1+win-win64.exe multipass
         - multipass version
         # - multipass set local.driver=virtualbox #Multipass defaults to using Hyper-V as it’s virtualization provider
         # - multipass launch --name microk8s-vm --mem 4G --disk 40G
