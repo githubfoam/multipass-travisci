@@ -107,7 +107,7 @@ matrix:
           fi
         - echo "$VM_NAME  provision started"
         - start=$(date +%s)
-        - sudo multipass launch $IMAGE_MULTIPASS -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE" daily:20.04
         - end=$(date +%s) &&  runtime=$((end-start))
         - echo $runtime
         - |
