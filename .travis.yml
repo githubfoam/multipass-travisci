@@ -137,9 +137,9 @@ matrix:
           - name: multipass
             confinement: classic # or devmode
             channel: latest/stable # will be passed to --channel flag
-          - name: kubectl
-            confinement: classic # or devmode
-            channel: latest/stable # will be passed to --channel flag
+          # - name: kubectl
+          #   confinement: classic # or devmode
+          #   channel: latest/stable # will be passed to --channel flag
       language: python
       python: 3.7
       before_install:
@@ -161,12 +161,13 @@ matrix:
         # # Install Homebrew
         # - brew cask install multipass
         - multipass version
+        - snap install kubectl --classic
         - kubectl version –client
         - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
         - sudo multipass info k3s
         #Install a single-node Kubernetes cluster on the VM with k3s
         - sudo multipass exec k3s -- bash -c "curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" sh -"
-        - multipass info k3s
+        - sudo multipass info k3s
         - K3S_IP=$(multipass info k3s | grep IPv4 | awk '{print $2}')
         - echo $K3S_IP
       after_success:
