@@ -183,11 +183,11 @@ matrix:
         - sudo apt-get install -qqy linuxbrew-wrapper
         - sudo apt-get install -qqy build-essential #Install the Linuxbrew dependencies
         #Add Linuxbrew to your ~/.bash_profile
-        - export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"' >>~/.bash_profile
-        - export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"' >>~/.bash_profile
-        - export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"' >>~/.bash_profile
+        - export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"' >>~/.bash_profile"
+        - export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"' >>~/.bash_profile"
+        - export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"' >>~/.bash_profile"
         #Add Linuxbrew to your PATH
-        - export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH
+        - export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
         - brew cask install multipass
         - multipass version
         - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
@@ -208,8 +208,8 @@ matrix:
     - name: "multipass k3s  Python 3.7 on bionic arm64"
       os: linux
       arch: arm64
-      dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
-      # dist: bionic
+      # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
+      dist: bionic
       addons:
         snaps:
           - name: multipass
