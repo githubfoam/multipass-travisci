@@ -161,7 +161,7 @@ matrix:
         # # Install Homebrew
         # - brew cask install multipass
         - multipass version
-        - snap install kubectl --classic
+        - sudo snap install kubectl --classic
         - kubectl version –client
         - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
         - sudo multipass info k3s
