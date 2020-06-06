@@ -192,6 +192,7 @@ matrix:
       # <<: *fleet_script_ubuntu_homebrew_tasks
       script:
         # - cat $HOME/.ssh/id_rsa.pub
+        - curl -SLsf https://get.k3sup.dev | sudo sh
         - sudo multipass launch ubuntu --name k3s-1 --cloud-init=config/cloud-init-openfaas.yaml
         - sudo multipass info k3s-1
         - IP=`sudo multipass list --format csv | grep "^node1" | cut -d, -f3`
@@ -293,6 +294,56 @@ matrix:
 
 
 # # #============================================================================ multiarch linux ============================================================================
+
+    #https://multipass.run/docs/launch-command
+    - name: "multipass k3sup  Python 3.7 on bionic arm64"
+      os: linux
+      arch: arm64
+      # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
+      dist: bionic
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/beta # will be passed to --channel flag
+          - name: kubectl
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+          - name: microk8s
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      # env:
+        # - VM_NAME="VM01"
+        # - CPU="1"
+        # - MEMORY="4G"
+        # - DISK="5G"
+        # - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
+        # - VM_IMAGE="20.04"
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+        # - egrep -c '(vmx|svm)' /proc/cpuinfo | echo "virtualization is  supported" | echo "virtualization is not supported"
+        # - sudo apt-get install -qqy cpu-checker #kvm-ok
+        # - sudo kvm-ok #check whether the KVM is installed
+        # - sudo apt-get install -qqy qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      # <<: *fleet_script_multipass_cloudinit_jenkins_tasks
+      # <<: *fleet_script_ubuntu_homebrew_tasks
+      script:
+        - multipass version
+        - curl -SLsf https://get.k3sup.dev | sudo sh
+        - SERVER_IP="192.168.40.20"
+        - sudo k3sup install --ip $SERVER_IP --user pi
+        - AGENT_IP="192.168.40.20"
+        - sudo k3sup join --ip $AGENT_IP --server-ip $SERVER_IP --user pi
+        - sudo k3sup app install openfaas [--load-balancer] [--basic-auth]
+      after_success:
+        - deactivate
+
 
     #https://multipass.run/docs/launch-command
     - name: "multipass k3s  Python 3.7 on bionic arm64"
