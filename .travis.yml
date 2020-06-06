@@ -153,14 +153,12 @@ matrix:
         # - cat $HOME/.ssh/id_rsa.pub
         - sudo multipass launch --name node1
         - sudo multipass exec node1 -- sudo sh -c "curl -sfL https://get.k3s.io | sh -"
-        - TOKEN=`sudo multipass exec node1 -- cat /var/lib/rancher/k3s/server/node-token`
+        - TOKEN=`sudo multipass exec node1 -- sudo cat /var/lib/rancher/k3s/server/node-token`
         - echo $TOKEN
         - IP=`sudo multipass list --format csv | grep "^node1" | cut -d, -f3`
         - echo $IP
-        - COUNT=4
-        - echo $COUNT
+        - COUNT=4 &&  echo $COUNT        
         - |
-          echo ""waiting for the nodes to be ready"
           for i in `seq 2 $COUNT`
           do
               sudo multipass launch --name node$i
