@@ -145,9 +145,16 @@ matrix:
       <<: *fleet_script_tasks
       <<: *fleet_script_terraform_deploy_tasks
       script:
-        - make launch-manager
-        - make launch-client
-        - make list
+        - sudo apt-get install -qqy unzip
+        - TERRAFORM_VERSION="0.12.26"
+        - wget https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_$TERRAFORM_VERSION_linux_amd64.zip
+        - # - wget https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_amd64.zip
+        - unzip terraform_$TERRAFORM_VERSION_linux_amd64.zip
+        - sudo mv terraform /usr/local/bin/
+        - terraform --version        
+        - sudo make launch-server
+        - sudo make launch-client
+        - sudo make list
       after_success:
         - deactivate
 
@@ -188,6 +195,13 @@ matrix:
       <<: *fleet_script_tasks
       <<: *fleet_script_arm_terraform_deploy_tasks
       script:
+        - sudo apt-get install -qqy unzip
+        - TERRAFORM_VERSION="0.12.26"
+        - wget https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_$TERRAFORM_VERSION_linux_arm.zip
+        - # - wget https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_arm.zip
+        - unzip terraform_$TERRAFORM_VERSION_linux_amd64.zip
+        - sudo mv terraform /usr/local/bin/
+        - terraform --version
         - sudo make launch-server
         - sudo make launch-client
         - sudo make list
