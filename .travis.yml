@@ -145,8 +145,17 @@ matrix:
         - source ~venvpy3/bin/activate
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
-      <<: *fleet_script_ubuntu_homebrew_tasks
+      # <<: *fleet_script_ubuntu_homebrew_tasks
       script:
+        # Install Homebrew
+        - sudo apt-get install -qqy build-essential curl file git
+        - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+        - test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+        - test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+        # - test -r ~/.bash_profile && echo "eval" ($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
+        - echo "eval $($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+        - brew install hello
+        # Install Homebrew
         - brew cask install multipass
         - multipass version
         - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
