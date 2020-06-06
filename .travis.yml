@@ -89,7 +89,7 @@ matrix:
         - MEMORY="4G"
         - DISK="5G"
         - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
-        - IMAGE_MULTIPASS="20.04"
+        - VM_IMAGE="20.04"
       before_install:
         - pip3 install virtualenv
         - virtualenv -p $(which python3) ~venvpy3
@@ -107,7 +107,7 @@ matrix:
           fi
         - echo "$VM_NAME  provision started"
         - start=$(date +%s)
-        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" 19.10 --cloud-init "$CLOUD_INIT_FILE"
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" "$VM_IMAGE" --cloud-init "$CLOUD_INIT_FILE"
         - end=$(date +%s) &&  runtime=$((end-start))
         - echo $runtime
         - |
@@ -119,12 +119,12 @@ matrix:
               echo "Waiting $VM_NAME VM to be running"
           done
         - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
+        - sudo multipass exec "$VM_NAME" -- service jenkins status #Verify Jenkins is running using the service command
+        - sudo multipass exec "$VM_NAME" -- cat /var/lib/jenkins/secrets/initialAdminPassword #View the initialAdminPassword for Jenkins install
         - sudo multipass list
         # - sudo multipass shell "$VM_NAME"
         - sudo multipass delete "$VM_NAME" && sudo multipass purge
         - echo "$VM_NAME destroyed"
-        - sudo multipass list
-        - sudo multipass launch -c 2 -m 2G -d 20G -n myVM focal
         - sudo multipass list
       after_success:
         - deactivate
