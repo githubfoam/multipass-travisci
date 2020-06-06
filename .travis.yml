@@ -128,6 +128,50 @@ matrix:
   fast_finish: true
   include:
 
+    - name: "openfaas multipass k3s Python 3.7 on bionic" #OK
+      os: linux
+      dist: bionic
+      arch: amd64
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+          # - name: kubectl
+          #   confinement: classic # or devmode
+          #   channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      # <<: *fleet_script_ubuntu_homebrew_tasks
+      script:
+        # - cat $HOME/.ssh/id_rsa.pub
+        - sudo multipass launch --name node1
+        - sudo multipass exec node1 -- sh -c "curl -sfL https://get.k3s.io | sh -"
+        - TOKEN=`multipass exec node1 -- sudo cat /var/lib/rancher/k3s/server/node-token`
+        - echo $TOKEN
+        - IP=`multipass list --format csv | grep "^node1" | cut -d, -f3`
+        - echo $IP
+        - COUNT=4
+        - echo $COUNT
+        - |
+          echo ""waiting for the nodes to be ready"
+          for i in `seq 2 $COUNT`
+          do
+              multipass launch --name node$i
+              multipass exec node$i -- sh -c "curl -sfL https://get.k3s.io | K3S_URL=https://$IP:6443 K3S_TOKEN=$TOKEN sh -"
+          done
+        - sleep 10
+        - sudo multipass exec node1 sudo kubectl get nodes
+
+      after_success:
+        - deactivate
+
     - name: "brew cask multipass k3s Python 3.7 on bionic" #OK
       os: linux
       dist: bionic
