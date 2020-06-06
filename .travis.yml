@@ -91,6 +91,25 @@ fleet_script_multipass_cloudinit_tasks : &fleet_script_multipass_cloudinit_tasks
         - echo "$VM_NAME destroyed"
         - sudo multipass list
 
+#https://www.terraform.io/downloads.html
+fleet_script_arm_terraform_deploy_tasks : &fleet_script_arm_terraform_deploy_tasks
+      script:
+        - sudo apt-get install -qqy unzip
+        - TERRAFORM_VERSION="0.12.26"
+        - wget https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_$TERRAFORM_VERSION_linux_arm.zip
+        - # - wget https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_arm.zip
+        - unzip terraform_$TERRAFORM_VERSION_linux_amd64.zip
+        - sudo mv terraform /usr/local/bin/
+        - terraform --version
+fleet_script_terraform_deploy_tasks : &fleet_script_terraform_deploy_tasks
+      script:
+        - sudo apt-get install -qqy unzip
+        - TERRAFORM_VERSION="0.12.26"
+        - wget https://releases.hashicorp.com/terraform/$TERRAFORM_VERSION/terraform_$TERRAFORM_VERSION_linux_amd64.zip
+        - # - wget https://releases.hashicorp.com/terraform/0.12.26/terraform_0.12.26_linux_amd64.zip
+        - unzip terraform_$TERRAFORM_VERSION_linux_amd64.zip
+        - sudo mv terraform /usr/local/bin/
+        - terraform --version
 fleet_script_tasks : &fleet_script_tasks
       script:
         - python --version
@@ -134,42 +153,45 @@ matrix:
 
 
 # # # #============================================================================ multiarch linux ============================================================================
-#
-#     #https://multipass.run/docs/launch-command
-#     - name: "multipass cloud-init jenkins Python 3.7 on bionic arm64"
-#       os: linux
-#       arch: arm64
-#       # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
-#       dist: bionic
-#       addons:
-#         snaps:
-#           - name: multipass
-#             confinement: classic # or devmode
-#             channel: latest/beta # will be passed to --channel flag
-#           - name: microk8s
-#             confinement: classic # or devmode
-#             channel: latest/stable # will be passed to --channel flag
-#       language: python
-#       python: 3.7
-#       # env:
-#         # - VM_NAME="VM01"
-#         # - CPU="1"
-#         # - MEMORY="4G"
-#         # - DISK="5G"
-#         # - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
-#         # - VM_IMAGE="20.04"
-#       before_install:
-#         - pip3 install virtualenv
-#         - virtualenv -p $(which python3) ~venvpy3
-#         - source ~venvpy3/bin/activate
-#         - kvm-ok #check whether the KVM is installed
-#         - sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils -qqy
-#       <<: *fleet_install_tasks
-#       <<: *fleet_script_tasks
-#       <<: *fleet_script_multipass_cloudinit_jenkins_tasks
-#       after_success:
-#         - deactivate
-#
+
+    #https://multipass.run/docs/launch-command
+    - name: "multipass cloud-init jenkins Python 3.7 on bionic arm64"
+      os: linux
+      arch: arm64
+      # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
+      dist: bionic
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/beta # will be passed to --channel flag
+          - name: microk8s
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      # env:
+        # - VM_NAME="VM01"
+        # - CPU="1"
+        # - MEMORY="4G"
+        # - DISK="5G"
+        # - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
+        # - VM_IMAGE="20.04"
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+        - kvm-ok #check whether the KVM is installed
+        - sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils -qqy
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      script:
+        - make launch-manager
+        - make launch-client
+        - make list
+      after_success:
+        - deactivate
+
 #
 #     - name: "multipass microk8s  edge Python 3.7 on bionic arm64"
 #       os: linux
