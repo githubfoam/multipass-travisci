@@ -49,7 +49,7 @@ fleet_script_multipass_cloudinit_jenkins_tasks : &fleet_script_multipass_cloudin
           done
         - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
         # - sudo multipass exec "$VM_NAME" -- service jenkins status #Verify Jenkins is running using the service command
-        - sudo multipass exec "$VM_NAME" -- cat /var/lib/jenkins/secrets/initialAdminPassword #View the initialAdminPassword for Jenkins install
+        - sudo multipass exec "$VM_NAME" -- sudo cat /var/lib/jenkins/secrets/initialAdminPassword #View the initialAdminPassword for Jenkins install
         - MULTIPASS_VM_IP=$(multipass info $VM_NAME | grep 'IPv4' | awk '{print $2}') && echo $MULTIPASS_VM_IP
         - sudo multipass list
         # - sudo multipass shell "$VM_NAME"
@@ -103,30 +103,30 @@ matrix:
   fast_finish: true
   include:
 
-    - name: "multipass cloud-init Python 3.7 on bionic" #OK
-      dist: bionic
-      addons:
-        snaps:
-          - name: multipass
-            confinement: classic # or devmode
-            channel: latest/stable # will be passed to --channel flag
-      language: python
-      python: 3.7
-      # env:
-      #   - VM_NAME="VM01"
-      #   - CPU="1"
-      #   - MEMORY="4G"
-      #   - DISK="5G"
-      #   - CLOUD_INIT_FILE="config/cloud-init.yaml"
-      before_install:
-        - pip3 install virtualenv
-        - virtualenv -p $(which python3) ~venvpy3
-        - source ~venvpy3/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      <<: *fleet_script_multipass_cloudinit_tasks
-      after_success:
-        - deactivate
+    # - name: "multipass cloud-init Python 3.7 on bionic" #OK
+    #   dist: bionic
+    #   addons:
+    #     snaps:
+    #       - name: multipass
+    #         confinement: classic # or devmode
+    #         channel: latest/stable # will be passed to --channel flag
+    #   language: python
+    #   python: 3.7
+    #   # env:
+    #   #   - VM_NAME="VM01"
+    #   #   - CPU="1"
+    #   #   - MEMORY="4G"
+    #   #   - DISK="5G"
+    #   #   - CLOUD_INIT_FILE="config/cloud-init.yaml"
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   <<: *fleet_script_multipass_cloudinit_tasks
+    #   after_success:
+    #     - deactivate
 
     #https://multipass.run/docs/launch-command
     - name: "multipass cloud-init jenkins Python 3.7 on bionic"
@@ -157,25 +157,25 @@ matrix:
 
 
 
-    - name: "multipass Python 3.7 on bionic" #OK
-      dist: bionic
-      addons:
-        snaps:
-          - name: multipass
-            confinement: classic # or devmode
-            channel: latest/stable # will be passed to --channel flag
-      language: python
-      python: 3.7
-      before_install:
-        - pip3 install virtualenv
-        - virtualenv -p $(which python3) ~venvpy3
-        - source ~venvpy3/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      script:
-        - snap info multipass
-      after_success:
-        - deactivate
+    # - name: "multipass Python 3.7 on bionic" #OK
+    #   dist: bionic
+    #   addons:
+    #     snaps:
+    #       - name: multipass
+    #         confinement: classic # or devmode
+    #         channel: latest/stable # will be passed to --channel flag
+    #   language: python
+    #   python: 3.7
+    #   before_install:
+    #     - pip3 install virtualenv
+    #     - virtualenv -p $(which python3) ~venvpy3
+    #     - source ~venvpy3/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   script:
+    #     - snap info multipass
+    #   after_success:
+    #     - deactivate
 
 
 
@@ -210,6 +210,8 @@ matrix:
         - pip3 install virtualenv
         - virtualenv -p $(which python3) ~venvpy3
         - source ~venvpy3/bin/activate
+        - kvm-ok #check whether the KVM is installed
+        - sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils -qqy
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
       <<: *fleet_script_multipass_cloudinit_jenkins_tasks
@@ -232,11 +234,6 @@ matrix:
             channel: latest/stable # will be passed to --channel flag
       language: python
       python: 3.7
-      # env:
-      #   - LIB_PATH="/usr/bin/shared/x86_64/v1"
-      # compiler:
-      #  - gcc
-      #  - clang
       before_install:
         - pip3 install virtualenv
         - virtualenv -p $(which python3) ~venvpy3
@@ -264,8 +261,9 @@ matrix:
     - name: "Installing Multipass on macOS 10.15.4 osx xcode11.5"
       os: osx
       osx_image:
-        - xcode10
-      # osx_image: xcode11.5 #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
+        - xcode9
+        # - xcode11.5 #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
+        # - xcode10
       language: shell
       before_install:
         - pip install virtualenv
@@ -298,29 +296,30 @@ matrix:
 
 
 # #   # =============================================windows=============================================
-#
-#
-# # https://multipass.run/docs/installing-on-windows
-# # https://microk8s.io/#get-started
-#     - name: "multipass  Python 3.8 on Windows"
-#       os: windows
-#       language: shell
-#       env:
-#         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
-#       before_install:
-#         - choco install python --version 3.8.1
-#         - pip install virtualenv
-#         - virtualenv $HOME/venv
-#         - source $HOME/venv/Scripts/activate
-#       <<: *fleet_install_tasks
-#       <<: *fleet_script_tasks
-#       script:
-#         - echo "choco install multipass"
-#         # - choco install multipass
-#         # - multipass set local.driver=virtualbox #Multipass defaults to using Hyper-V as it’s virtualization provider
-#         # - multipass launch --name microk8s-vm --mem 4G --disk 40G
-#         # - multipass shell microk8s-vm
-#         # - sudo microk8s status --wait-ready
-#         # - sudo microk8s enable dns dashboard registry
-#       after_success:
-#         - deactivate
+
+#Multipass defaults to using Hyper-V as it’s virtualization provider
+# https://multipass.run/docs/installing-on-windows
+# https://microk8s.io/#get-started
+    - name: "multipass  Python 3.8 on Windows"
+      os: windows
+      language: shell
+      env:
+        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+      before_install:
+        - choco install python --version 3.8.1
+        - pip install virtualenv
+        - virtualenv $HOME/venv
+        - source $HOME/venv/Scripts/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      script:
+        - echo "choco install multipass"
+        - choco install multipass
+        - multipass version
+        # - multipass set local.driver=virtualbox #Multipass defaults to using Hyper-V as it’s virtualization provider
+        # - multipass launch --name microk8s-vm --mem 4G --disk 40G
+        # - multipass shell microk8s-vm
+        # - sudo microk8s status --wait-ready
+        # - sudo microk8s enable dns dashboard registry
+      after_success:
+        - deactivate
