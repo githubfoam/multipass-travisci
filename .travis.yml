@@ -132,11 +132,11 @@ matrix:
       os: linux
       dist: bionic
       arch: amd64
-      # addons:
-      #   snaps:
-      #     - name: multipass
-      #       confinement: classic # or devmode
-      #       channel: latest/stable # will be passed to --channel flag
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
       language: python
       python: 3.7
       before_install:
@@ -147,7 +147,7 @@ matrix:
       <<: *fleet_script_tasks
       <<: *fleet_script_ubuntu_homebrew_tasks
       script:
-        - brew cask install multipass
+        # - brew cask install multipass
         - multipass version
         - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
         - multipass info k3s
@@ -161,7 +161,38 @@ matrix:
         - deactivate
 
 
-
+    - name: "multipass k3s Python 3.7 on bionic" #OK
+      os: linux
+      dist: bionic
+      arch: amd64
+      # addons:
+      #   snaps:
+      #     - name: multipass
+      #       confinement: classic # or devmode
+      #       channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      # <<: *fleet_script_ubuntu_homebrew_tasks
+      script:
+        - sudo apt-get install -qqy linuxbrew-wrapper
+        - brew cask install multipass
+        - multipass version
+        - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
+        - multipass info k3s
+        #Install a single-node Kubernetes cluster on the VM with k3s
+        - sudo multipass exec k3s -- bash -c "curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" sh -"
+        - brew install kubernetes-cli
+        - multipass info k3s
+        - K3S_IP=$(multipass info k3s | grep IPv4 | awk '{print $2}')
+        - echo $K3S_IP
+      after_success:
+        - deactivate
 
 
 # # #============================================================================ multiarch linux ============================================================================
@@ -211,7 +242,7 @@ matrix:
         - brew install kubernetes-cli
         - multipass info k3s
         - K3S_IP=$(multipass info k3s | grep IPv4 | awk '{print $2}')
-        - echo $K3S_IP      
+        - echo $K3S_IP
       after_success:
         - deactivate
 
