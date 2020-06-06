@@ -84,12 +84,12 @@ matrix:
       language: python
       python: 3.7
       env:
-        - VM_NAME="myVM "
+        - VM_NAME="VM01 "
         - CPU="1"
         - MEMORY="4G"
         - DISK="5G"
         - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
-        - IMAGE_MULTIPASS="daily:20.04"
+        - IMAGE_MULTIPASS="focal"
       before_install:
         - pip3 install virtualenv
         - virtualenv -p $(which python3) ~venvpy3
@@ -107,7 +107,7 @@ matrix:
           fi
         - echo "$VM_NAME  provision started"
         - start=$(date +%s)
-        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" daily:20.04 --cloud-init "$CLOUD_INIT_FILE" 
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" focal --cloud-init "$CLOUD_INIT_FILE"
         - end=$(date +%s) &&  runtime=$((end-start))
         - echo $runtime
         - |
