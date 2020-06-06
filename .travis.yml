@@ -254,6 +254,10 @@ matrix:
         - multipass version
         - sh-keygen -b 2048 -f ~/.ssh/multipass -t rsa -q -N "" #create a ssh key
         - cat ~/.ssh/multipass.pub #Copy the contents of the public key to the cloud-init file
+        - sudo multipass launch --name ubuntu-lts
+        - sudo multipass exec ubuntu-lts -- lsb_release -a
+        - sudo multipass launch -n ubuntu-lts-custom --cloud-init "config/cloud-init-macos.yaml"
+        - sudo multipass list
         # - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" #Install Homebrew
         # - brew cask install multipass
         # - multipass version
