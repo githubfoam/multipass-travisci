@@ -253,7 +253,7 @@ matrix:
       script:
         - multipass version
         - sh-keygen -b 2048 -f ~/.ssh/multipass -t rsa -q -N "" #create a ssh key
-        - cat ~/.ssh/multipass.pub
+        - cat ~/.ssh/multipass.pub #Copy the contents of the public key to the cloud-init file
         # - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)" #Install Homebrew
         # - brew cask install multipass
         # - multipass version
