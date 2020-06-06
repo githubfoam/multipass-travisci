@@ -169,7 +169,7 @@ matrix:
         snaps:
           - name: multipass
             confinement: classic # or devmode
-            channel: latest/stable # will be passed to --channel flag
+            channel: latest/edge # will be passed to --channel flag
           - name: microk8s
             confinement: classic # or devmode
             channel: latest/stable # will be passed to --channel flag
