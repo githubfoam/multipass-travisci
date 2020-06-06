@@ -9,14 +9,7 @@ notifications:
   slack:
     on_failure: always
 
-fleet_script_microk8s_tasks : &fleet_script_microk8s_tasks
-        - sudo rm -rf /var/snap/microk8s/common/var/lib/containerd
-        - ls -l /var/snap/microk8s/current/args/containerd-template.toml
-        # - sudo sed 's%snapshotter = "overlayfs"%snapshotter = "zfs"%g' /var/snap/microk8s/current/args/containerd-template.toml
-        # - sudo zfs create -o mountpoint=/var/snap/microk8s/common/var/lib/containerd/io.containerd.snapshotter.v1.zfs $POOL/containerd
-        - sudo microk8s start
-        - sudo microk8s status
-        - sudo microk8s stop
+
 
 fleet_script_multipass_cloudinit_jenkins_tasks : &fleet_script_multipass_cloudinit_jenkins_tasks
       script:
@@ -91,99 +84,7 @@ fleet_script_multipass_cloudinit_tasks : &fleet_script_multipass_cloudinit_tasks
         - echo "$VM_NAME destroyed"
         - sudo multipass list
 
-fleet_script_tasks : &fleet_script_tasks
-      script:
-        - python --version
-fleet_install_tasks : &fleet_install_tasks
-      install:
-        - pip install -r requirements.txt
-
-
-matrix:
-  fast_finish: true
-  include:
-
-    # - name: "multipass cloud-init Python 3.7 on bionic" #OK
-    #   dist: bionic
-    #   addons:
-    #     snaps:
-    #       - name: multipass
-    #         confinement: classic # or devmode
-    #         channel: latest/stable # will be passed to --channel flag
-    #   language: python
-    #   python: 3.7
-    #   # env:
-    #   #   - VM_NAME="VM01"
-    #   #   - CPU="1"
-    #   #   - MEMORY="4G"
-    #   #   - DISK="5G"
-    #   #   - CLOUD_INIT_FILE="config/cloud-init.yaml"
-    #   before_install:
-    #     - pip3 install virtualenv
-    #     - virtualenv -p $(which python3) ~venvpy3
-    #     - source ~venvpy3/bin/activate
-    #   <<: *fleet_install_tasks
-    #   <<: *fleet_script_tasks
-    #   <<: *fleet_script_multipass_cloudinit_tasks
-    #   after_success:
-    #     - deactivate
-
-    # #https://multipass.run/docs/launch-command
-    # - name: "multipass cloud-init jenkins Python 3.7 on bionic"
-    #   dist: bionic
-    #   addons:
-    #     snaps:
-    #       - name: multipass
-    #         confinement: classic # or devmode
-    #         channel: latest/stable # will be passed to --channel flag
-    #   language: python
-    #   python: 3.7
-    #   # env:
-    #   #   - VM_NAME="VM01"
-    #   #   - CPU="1"
-    #   #   - MEMORY="4G"
-    #   #   - DISK="5G"
-    #   #   - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
-    #   #   - VM_IMAGE="20.04"
-    #   before_install:
-    #     - pip3 install virtualenv
-    #     - virtualenv -p $(which python3) ~venvpy3
-    #     - source ~venvpy3/bin/activate
-    #   <<: *fleet_install_tasks
-    #   <<: *fleet_script_tasks
-    #   <<: *fleet_script_multipass_cloudinit_jenkins_tasks
-    #   after_success:
-    #     - deactivate
-
-
-
-    - name: "multipass k3s Python 3.7 on bionic" #OK
-      os: linux
-      dist: bionic
-      arch: amd64
-      # addons:
-      #   snaps:
-      #     - name: multipass
-      #       confinement: classic # or devmode
-      #       channel: latest/stable # will be passed to --channel flag
-      language: python
-      python: 3.7
-      before_install:
-        - pip3 install virtualenv
-        - virtualenv -p $(which python3) ~venvpy3
-        - source ~venvpy3/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      script:
-        # Install Homebrew
-        - sudo apt-get install -qqy build-essential curl file git
-        - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-        - test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
-        - test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-        - test -r ~/.bash_profile && echo "eval" ($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
-        - echo "eval $($(brew --prefix)/bin/brew shellenv)" >>~/.profile
-        - brew install hello
-        # Install Homebrew
+fleet_script_k3s_tasks : &fleet_script_k3s_tasks
         - brew cask install multipass
         - multipass version
         - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
@@ -203,6 +104,59 @@ matrix:
         # - kubectl get pods --all-namespaces
         # - brew install helm@3
 
+fleet_script_ubuntu_homebrew_tasks : &fleet_script_ubuntu_homebrew_tasks
+      script:
+        # Install Homebrew
+        - sudo apt-get install -qqy build-essential curl file git
+        - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+        - test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+        - test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+        - test -r ~/.bash_profile && echo "eval" ($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
+        - echo "eval $($(brew --prefix)/bin/brew shellenv)" >>~/.profile
+        - brew install hello
+        # Install Homebrew
+
+fleet_script_tasks : &fleet_script_tasks
+      script:
+        - python --version
+fleet_install_tasks : &fleet_install_tasks
+      install:
+        - pip install -r requirements.txt
+
+
+matrix:
+  fast_finish: true
+  include:
+
+    - name: "multipass k3s Python 3.7 on bionic" #OK
+      os: linux
+      dist: bionic
+      arch: amd64
+      # addons:
+      #   snaps:
+      #     - name: multipass
+      #       confinement: classic # or devmode
+      #       channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_ubuntu_homebrew_tasks
+      script:
+        - brew cask install multipass
+        - multipass version
+        - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
+        - multipass info k3s
+        #Install a single-node Kubernetes cluster on the VM with k3s
+        - sudo multipass exec k3s -- bash -c "curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" sh -"
+        - brew install kubernetes-cli
+        - multipass info k3s
+        - K3S_IP=$(multipass info k3s | grep IPv4 | awk '{print $2}')
+        - echo $K3S_IP
       after_success:
         - deactivate
 
@@ -246,6 +200,18 @@ matrix:
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
       <<: *fleet_script_multipass_cloudinit_jenkins_tasks
+      <<: *fleet_script_ubuntu_homebrew_tasks
+      script:
+        - brew cask install multipass
+        - multipass version
+        - sudo multipass launch --name k3s --cpus 4 --mem 4g --disk 20g
+        - multipass info k3s
+        #Install a single-node Kubernetes cluster on the VM with k3s
+        - sudo multipass exec k3s -- bash -c "curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" sh -"
+        - brew install kubernetes-cli
+        - multipass info k3s
+        - K3S_IP=$(multipass info k3s | grep IPv4 | awk '{print $2}')
+        - echo $K3S_IP      
       after_success:
         - deactivate
 
@@ -315,40 +281,40 @@ matrix:
 
 
 
-# #   # =============================================windows=============================================
-
-#Multipass defaults to using Hyper-V as it’s virtualization provider
-# https://multipass.run/docs/installing-on-windows
-#https://github.com/canonical/multipass/releases
-# https://microk8s.io/#get-started
-#https://github.com/canonical/multipass
-    - name: "multipass  Python 3.8 on Windows"
-      os: windows
-      language: shell
-      env:
-        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
-      before_install:
-        - choco install python --version 3.8.1
-        - pip install virtualenv
-        - virtualenv $HOME/venv
-        - source $HOME/venv/Scripts/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      script:
-        # - echo "choco install multipass" #- multipass (exited -1) - Error while running 'C:\ProgramData\chocolatey\lib\multipass\tools\chocolateyinstall.ps1'
-        - choco install wget
-        - wget https://github.com/canonical/multipass/releases/download/v1.2.1/multipass-1.2.1+win-win64.exe
-        - dir
-        - echo %cd%
-        - SET "PATH=%cd%;%PATH%"
-        - multipass-1.2.1+win-win64.exe version
-        - multipass version
-        - rename multipass-1.2.1+win-win64.exe multipass
-        - multipass version
-        # - multipass set local.driver=virtualbox #Multipass defaults to using Hyper-V as it’s virtualization provider
-        # - multipass launch --name microk8s-vm --mem 4G --disk 40G
-        # - multipass shell microk8s-vm
-        # - sudo microk8s status --wait-ready
-        # - sudo microk8s enable dns dashboard registry
-      after_success:
-        - deactivate
+# # #   # =============================================windows=============================================
+#
+# #Multipass defaults to using Hyper-V as it’s virtualization provider
+# # https://multipass.run/docs/installing-on-windows
+# #https://github.com/canonical/multipass/releases
+# # https://microk8s.io/#get-started
+# #https://github.com/canonical/multipass
+#     - name: "multipass  Python 3.8 on Windows"
+#       os: windows
+#       language: shell
+#       env:
+#         - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+#       before_install:
+#         - choco install python --version 3.8.1
+#         - pip install virtualenv
+#         - virtualenv $HOME/venv
+#         - source $HOME/venv/Scripts/activate
+#       <<: *fleet_install_tasks
+#       <<: *fleet_script_tasks
+#       script:
+#         # - echo "choco install multipass" #- multipass (exited -1) - Error while running 'C:\ProgramData\chocolatey\lib\multipass\tools\chocolateyinstall.ps1'
+#         - choco install wget
+#         - wget https://github.com/canonical/multipass/releases/download/v1.2.1/multipass-1.2.1+win-win64.exe
+#         - dir
+#         - echo %cd%
+#         - SET "PATH=%cd%;%PATH%"
+#         - multipass-1.2.1+win-win64.exe version
+#         - multipass version
+#         - rename multipass-1.2.1+win-win64.exe multipass
+#         - multipass version
+#         # - multipass set local.driver=virtualbox #Multipass defaults to using Hyper-V as it’s virtualization provider
+#         # - multipass launch --name microk8s-vm --mem 4G --disk 40G
+#         # - multipass shell microk8s-vm
+#         # - sudo microk8s status --wait-ready
+#         # - sudo microk8s enable dns dashboard registry
+#       after_success:
+#         - deactivate
