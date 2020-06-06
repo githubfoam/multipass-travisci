@@ -157,7 +157,7 @@ matrix:
         - echo $TOKEN
         - IP=`sudo multipass list --format csv | grep "^node1" | cut -d, -f3`
         - echo $IP
-        - COUNT=4 &&  echo $COUNT
+        - COUNT=7 &&  echo $COUNT
         - |
           for i in `seq 2 $COUNT`
           do
