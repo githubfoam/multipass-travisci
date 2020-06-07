@@ -167,9 +167,8 @@ matrix:
       addons:
         snaps:
           - name: multipass
-            confinement: classic # or devmode
-            channel: latest/edge # will be passed to --channel flag
-            # channel: latest/beta # will be passed to --channel flag
+            confinement: classic # or devmode  
+            channel: latest/beta # will be passed to --channel flag
           - name: microk8s
             confinement: classic # or devmode
             channel: latest/stable # will be passed to --channel flag
