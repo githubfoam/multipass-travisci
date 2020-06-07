@@ -9,15 +9,6 @@ notifications:
   slack:
     on_failure: always
 
-fleet_script_microk8s_tasks : &fleet_script_microk8s_tasks
-        - sudo rm -rf /var/snap/microk8s/common/var/lib/containerd
-        - ls -l /var/snap/microk8s/current/args/containerd-template.toml
-        # - sudo sed 's%snapshotter = "overlayfs"%snapshotter = "zfs"%g' /var/snap/microk8s/current/args/containerd-template.toml
-        # - sudo zfs create -o mountpoint=/var/snap/microk8s/common/var/lib/containerd/io.containerd.snapshotter.v1.zfs $POOL/containerd
-        - sudo microk8s start
-        - sudo microk8s status
-        - sudo microk8s stop
-
 fleet_script_multipass_cloudinit_jenkins_tasks : &fleet_script_multipass_cloudinit_jenkins_tasks
       script:
         - export VM_NAME="VM01"
@@ -105,7 +96,7 @@ matrix:
 
     - name: "multipass cloud-init Python 3.7 on bionic amd64"
       arch: amd64
-      dist: bionic    
+      dist: bionic
       addons:
         snaps:
           - name: multipass
@@ -169,9 +160,6 @@ matrix:
         - virtualenv -p $(which python3) ~venvpy3
         - source ~venvpy3/bin/activate
         - egrep -c '(vmx|svm)' /proc/cpuinfo | echo "virtualization is  supported" | echo "virtualization is not supported"
-        - sudo apt-get install -qqy cpu-checker #kvm-ok
-        - sudo kvm-ok #check whether the KVM is installed
-        - sudo apt-get install -qqy qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
       # <<: *fleet_script_multipass_cloudinit_jenkins_tasks
