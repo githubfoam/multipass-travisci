@@ -149,8 +149,58 @@ matrix:
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
       script:
-        - ./k3s-multipass-cluster.bash --version v1.17.2+k3s1 --no-deploy dashboard --no-deploy weavescope --no-deploy prometheus
+        - source config/k3s-multipass-cluster.bash --version v1.17.2+k3s1 --no-deploy dashboard --no-deploy weavescope --no-deploy prometheus
         - source config/k3s-multipass-cluster.bash -h
+      after_success:
+        - deactivate
+
+
+    - name: "multipass k3s part3 Python 3.7 on bionic" #OK
+      os: linux
+      dist: bionic
+      arch: amd64
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+          # - name: kubectl
+          #   confinement: classic # or devmode
+          #   channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      # <<: *fleet_script_ubuntu_homebrew_tasks
+      script:
+        # - cat $HOME/.ssh/id_rsa.pub
+        - sudo multipass launch --name node1
+        - sudo multipass exec node1 -- sudo sh -c "curl -sfL https://get.k3s.io | sh -"
+        - TOKEN=`sudo multipass exec node1 -- sudo cat /var/lib/rancher/k3s/server/node-token`
+        - echo $TOKEN
+        - IP=`sudo multipass list --format csv | grep "^node1" | cut -d, -f3`
+        - echo $IP
+        - COUNT=7 &&  echo $COUNT
+        - |
+          for i in `seq 2 $COUNT`
+          do
+              sudo multipass launch --name node$i | tee /dev/null
+              sudo multipass exec node$i -- sudo sh -c "curl -sfL https://get.k3s.io | K3S_URL=https://$IP:6443 K3S_TOKEN=$TOKEN sh -"
+          done
+        - sleep 10
+        - sudo multipass exec node1 sudo kubectl get nodes
+        #
+        - KUBECONFIG=k3s.yaml
+        - NODES=$(echo node{2..4})
+        - |
+          for NODE in ${NODES}; do
+          multipass exec ${NODE} -- bash -c 'sudo systemctl enable iscsid && sudo systemctl start iscsid'
+          done
+
       after_success:
         - deactivate
 
