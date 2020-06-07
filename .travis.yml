@@ -9,6 +9,87 @@ notifications:
   slack:
     on_failure: always
 
+fleet_script_microk8s_tasks : &fleet_script_microk8s_tasks
+        - sudo rm -rf /var/snap/microk8s/common/var/lib/containerd
+        - ls -l /var/snap/microk8s/current/args/containerd-template.toml
+        # - sudo sed 's%snapshotter = "overlayfs"%snapshotter = "zfs"%g' /var/snap/microk8s/current/args/containerd-template.toml
+        # - sudo zfs create -o mountpoint=/var/snap/microk8s/common/var/lib/containerd/io.containerd.snapshotter.v1.zfs $POOL/containerd
+        - sudo microk8s start
+        - sudo microk8s status
+        - sudo microk8s stop
+
+fleet_script_multipass_cloudinit_jenkins_tasks : &fleet_script_multipass_cloudinit_jenkins_tasks
+      script:
+        - export VM_NAME="VM01"
+        - export CPU="1"
+        - export MEMORY="4G"
+        - export DISK="5G"
+        - export CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
+        - VM_IMAGE="20.04"
+        - sudo multipass find #listing of all the available Ubuntu images
+        - ls -l /var/snap/multipass/common/multipass_socket #
+        - |
+          if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
+            echo "VM: $VM_NAME is Provisioned"
+          else
+            echo "VM: $VM_NAME Yet To Be Provisioned."
+          fi
+        - echo "$VM_NAME  provision started"
+        - start=$(date +%s)
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" "$VM_IMAGE" --cloud-init "$CLOUD_INIT_FILE"
+        - end=$(date +%s) &&  runtime=$((end-start))
+        - echo $runtime
+        - |
+          while :
+          do
+              status=$(sudo multipass ls | grep "$VM_NAME"  |  awk '{print $2}')
+              [ ! $status = "Running"  ] || break
+              sleep 5
+              echo "Waiting $VM_NAME VM to be running"
+          done
+        - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
+        # - sudo multipass exec "$VM_NAME" -- service jenkins status #Verify Jenkins is running using the service command
+        - sudo multipass exec "$VM_NAME" -- sudo cat /var/lib/jenkins/secrets/initialAdminPassword #View the initialAdminPassword for Jenkins install
+        - MULTIPASS_VM_IP=$(multipass info $VM_NAME | grep 'IPv4' | awk '{print $2}') && echo $MULTIPASS_VM_IP
+        - sudo multipass list
+        # - sudo multipass shell "$VM_NAME"
+        - sudo multipass delete "$VM_NAME" && sudo multipass purge
+        - echo "$VM_NAME destroyed"
+        - sudo multipass list
+
+fleet_script_multipass_cloudinit_tasks : &fleet_script_multipass_cloudinit_tasks
+      script:
+        - VM_NAME="VM01"
+        - CPU="1"
+        - MEMORY="4G"
+        - DISK="5G"
+        - CLOUD_INIT_FILE="config/cloud-init.yaml"
+        - ls -l /var/snap/multipass/common/multipass_socket #
+        - |
+          if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
+            echo "VM: $VM_NAME is Provisioned"
+          else
+            echo "VM: $VM_NAME Yet To Be Provisioned."
+          fi
+        - echo "$VM_NAME  provision started"
+        - start=$(date +%s)
+        - sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"
+        - end=$(date +%s) &&  runtime=$((end-start))
+        - echo $runtime
+        - |
+          while :
+          do
+              status=$(sudo multipass ls | grep "$VM_NAME"  |  awk '{print $2}')
+              [ ! $status = "Running"  ] || break
+              sleep 5
+              echo "Waiting $VM_NAME VM to be running"
+          done
+        - sudo multipass exec "$VM_NAME" -- tail  -n 20  /var/log/cloud-init-output.log
+        - sudo multipass list
+        # - sudo multipass shell "$VM_NAME"
+        - sudo multipass delete "$VM_NAME" && sudo multipass purge
+        - echo "$VM_NAME destroyed"
+        - sudo multipass list
 
 fleet_script_tasks : &fleet_script_tasks
       script:
@@ -22,8 +103,30 @@ matrix:
   fast_finish: true
   include:
 
+    - name: "multipass cloud-init Python 3.7 on bionic amd64"
+      arch: amd64
+      dist: bionic    
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_multipass_cloudinit_tasks
+      after_success:
+        - deactivate
 
-    - name: "multipass Python 3.7 on bionic"
+    #https://multipass.run/docs/launch-command
+    - name: "multipass cloud-init jenkins Python 3.7 on bionic amd64"
+      os: linux
+      arch: amd64
       dist: bionic
       addons:
         snaps:
@@ -38,28 +141,24 @@ matrix:
         - source ~venvpy3/bin/activate
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
-      script:
-        - ls -l /var/snap/multipass/common/multipass_socket #
-        - snap info --verbose multipass
+      <<: *fleet_script_multipass_cloudinit_jenkins_tasks
       after_success:
         - deactivate
 
 
+# # #============================================================================ multiarch linux ============================================================================
 
-
-
-# #============================================================================ multiarch linux ============================================================================
-
-
-    - name: "MicroK8s Multipass edge Python 3.7 on xenial arm64"
+    #https://multipass.run/docs/launch-command
+    - name: "multipass beta cloud-init jenkins Python 3.7 on bionic arm64" #virtualization is not supported
       os: linux
       arch: arm64
-      dist: xenial
+      # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
+      dist: bionic
       addons:
         snaps:
           - name: multipass
             confinement: classic # or devmode
-            channel: latest/edge # will be passed to --channel flag
+            channel: latest/beta # will be passed to --channel flag
           - name: microk8s
             confinement: classic # or devmode
             channel: latest/stable # will be passed to --channel flag
@@ -69,12 +168,73 @@ matrix:
         - pip3 install virtualenv
         - virtualenv -p $(which python3) ~venvpy3
         - source ~venvpy3/bin/activate
+        - egrep -c '(vmx|svm)' /proc/cpuinfo | echo "virtualization is  supported" | echo "virtualization is not supported"
+        - sudo apt-get install -qqy cpu-checker #kvm-ok
+        - sudo kvm-ok #check whether the KVM is installed
+        - sudo apt-get install -qqy qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      # <<: *fleet_script_multipass_cloudinit_jenkins_tasks
+      after_success:
+        - deactivate
+
+
+# =============================================macOS=============================================
+
+    #The default backend on macOS is hyperkit, wrapping Apple’s Hypervisor.framework
+    #You need macOS Yosemite, version 10.10.3 or later installed on a 2010 or newer Mac
+    #https://docs.travis-ci.com/user/reference/osx/#macos-version
+    # https://multipass.run/docs/installing-on-macos
+    # https://microk8s.io/#get-started
+    #https://multipass.run/docs/installing-on-macos
+    # https://brew.sh/
+    - name: "multipass on macOS 10.15.4 osx xcode11.5"
+      os: osx
+      osx_image: #installer: Error - Your CPU does not have the features necessary for Multipass. Installation cannot proceed
+        - xcode11.5
+      language: shell
+      before_install:
+        - pip install virtualenv
+        - virtualenv -p $(which python2) ~venvpy2
+        - source ~venvpy2/bin/activate
       <<: *fleet_install_tasks
       <<: *fleet_script_tasks
       script:
-        - snap info --verbose multipass
-        - snap info --verbose  microk8s #All the currently available channels
+        - /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+        # - brew cask install multipass
+        # - multipass version
+        # - brew list --versions
+      after_success:
+        # - brew cask uninstall multipass
+        - deactivate
 
 
+
+
+
+# #   # =============================================windows=============================================
+
+#Multipass defaults to using Hyper-V as it’s virtualization provider
+# https://multipass.run/docs/installing-on-windows
+#https://github.com/canonical/multipass/releases
+# https://microk8s.io/#get-started
+#https://github.com/canonical/multipass
+    - name: "multipass  Python 3.8 on Windows"
+      os: windows
+      language: shell
+      env:
+        - PATH=/c/Python38:/c/Python38/Scripts:$PATH
+      before_install:
+        - choco install python --version 3.8.1
+        - pip install virtualenv
+        - virtualenv $HOME/venv
+        - source $HOME/venv/Scripts/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      script:
+        # - echo "choco install multipass" #- multipass (exited -1) - Error while running 'C:\ProgramData\chocolatey\lib\multipass\tools\chocolateyinstall.ps1'
+        - choco install wget
+        - wget https://github.com/canonical/multipass/releases/download/v1.2.1/multipass-1.2.1+win-win64.exe
+        - dir
       after_success:
         - deactivate
