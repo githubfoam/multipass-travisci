@@ -103,57 +103,57 @@ matrix:
   fast_finish: true
   include:
 
-    # - name: "multipass cloud-init Python 3.7 on bionic" #OK
-    #   dist: bionic
-    #   addons:
-    #     snaps:
-    #       - name: multipass
-    #         confinement: classic # or devmode
-    #         channel: latest/stable # will be passed to --channel flag
-    #   language: python
-    #   python: 3.7
-    #   # env:
-    #   #   - VM_NAME="VM01"
-    #   #   - CPU="1"
-    #   #   - MEMORY="4G"
-    #   #   - DISK="5G"
-    #   #   - CLOUD_INIT_FILE="config/cloud-init.yaml"
-    #   before_install:
-    #     - pip3 install virtualenv
-    #     - virtualenv -p $(which python3) ~venvpy3
-    #     - source ~venvpy3/bin/activate
-    #   <<: *fleet_install_tasks
-    #   <<: *fleet_script_tasks
-    #   <<: *fleet_script_multipass_cloudinit_tasks
-    #   after_success:
-    #     - deactivate
+    - name: "multipass cloud-init Python 3.7 on bionic" #OK
+      dist: bionic
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      # env:
+      #   - VM_NAME="VM01"
+      #   - CPU="1"
+      #   - MEMORY="4G"
+      #   - DISK="5G"
+      #   - CLOUD_INIT_FILE="config/cloud-init.yaml"
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_multipass_cloudinit_tasks
+      after_success:
+        - deactivate
 
-    # #https://multipass.run/docs/launch-command
-    # - name: "multipass cloud-init jenkins Python 3.7 on bionic"
-    #   dist: bionic
-    #   addons:
-    #     snaps:
-    #       - name: multipass
-    #         confinement: classic # or devmode
-    #         channel: latest/stable # will be passed to --channel flag
-    #   language: python
-    #   python: 3.7
-    #   # env:
-    #   #   - VM_NAME="VM01"
-    #   #   - CPU="1"
-    #   #   - MEMORY="4G"
-    #   #   - DISK="5G"
-    #   #   - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
-    #   #   - VM_IMAGE="20.04"
-    #   before_install:
-    #     - pip3 install virtualenv
-    #     - virtualenv -p $(which python3) ~venvpy3
-    #     - source ~venvpy3/bin/activate
-    #   <<: *fleet_install_tasks
-    #   <<: *fleet_script_tasks
-    #   <<: *fleet_script_multipass_cloudinit_jenkins_tasks
-    #   after_success:
-    #     - deactivate
+    #https://multipass.run/docs/launch-command
+    - name: "multipass cloud-init jenkins Python 3.7 on bionic"
+      dist: bionic
+      addons:
+        snaps:
+          - name: multipass
+            confinement: classic # or devmode
+            channel: latest/stable # will be passed to --channel flag
+      language: python
+      python: 3.7
+      # env:
+      #   - VM_NAME="VM01"
+      #   - CPU="1"
+      #   - MEMORY="4G"
+      #   - DISK="5G"
+      #   - CLOUD_INIT_FILE="config/cloud-init-jenkins.yaml"
+      #   - VM_IMAGE="20.04"
+      before_install:
+        - pip3 install virtualenv
+        - virtualenv -p $(which python3) ~venvpy3
+        - source ~venvpy3/bin/activate
+      <<: *fleet_install_tasks
+      <<: *fleet_script_tasks
+      <<: *fleet_script_multipass_cloudinit_jenkins_tasks
+      after_success:
+        - deactivate
 
 
 # # #============================================================================ multiarch linux ============================================================================
