@@ -159,7 +159,7 @@ matrix:
 # # #============================================================================ multiarch linux ============================================================================
 
     #https://multipass.run/docs/launch-command
-    - name: "multipass cloud-init jenkins Python 3.7 on bionic arm64"
+    - name: "multipass edge cloud-init jenkins Python 3.7 on bionic arm64"
       os: linux
       arch: arm64
       # dist: xenial #Cannot check BIOS for determining KVM extensions support,Unable to load KVM support. Please ensure KVM is installed on your machine.
@@ -168,6 +168,7 @@ matrix:
         snaps:
           - name: multipass
             confinement: classic # or devmode
+            channel: latest/edge # will be passed to --channel flag
             channel: latest/beta # will be passed to --channel flag
           - name: microk8s
             confinement: classic # or devmode
