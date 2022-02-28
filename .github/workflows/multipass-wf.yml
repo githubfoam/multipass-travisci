@@ -21,7 +21,7 @@ jobs:
           snap info multipass
           snap info --verbose multipass
           # uses classic confinement, channel latest/stable
-          snap install --classic  --channel=stable  multipass
+          sudo snap install --classic  --channel=stable  multipass
           # snap list 
           # snap list --all multipass
           # snap changes 
