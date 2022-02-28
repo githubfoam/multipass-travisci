@@ -9,7 +9,7 @@ on:
 jobs:
 
   ubuntu-1804-job:
-    name: "lxd onubuntu-18.04"
+    name: "multipass on ubuntu-18.04"
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
@@ -21,10 +21,10 @@ jobs:
           snap info multipass
           snap info --verbose multipass
           # uses classic confinement, channel latest/stable
-          snap install --classic  --channel=stable 
-          snap list 
-          snap list --all multipass
-          snap changes 
+          snap install --classic  --channel=stable  multipass
+          # snap list 
+          # snap list --all multipass
+          # snap changes 
 
   # ubuntu-2004-job:
   #   name: "lxd on ubuntu-20.04"
