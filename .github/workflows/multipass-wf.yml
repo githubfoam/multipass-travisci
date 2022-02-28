@@ -31,6 +31,8 @@ jobs:
           source ~venvpy3/bin/activate
           pip install -r requirements.txt
           python --version
+          export VM_NAME="VM01"
+          echo $VM_NAME
 
   # ubuntu-2004-job:
   #   name: "lxd on ubuntu-20.04"
