@@ -18,6 +18,13 @@ jobs:
     - name: "snap multipass"
       run: |
           snap --version #make sure snap installed
+          snap info multipass
+          snap info --verbose multipass
+          # uses classic confinement, channel latest/stable
+          snap install --classic  --channel=stable 
+          snap list 
+          snap list --all multipass
+          snap changes 
 
   # ubuntu-2004-job:
   #   name: "lxd on ubuntu-20.04"
