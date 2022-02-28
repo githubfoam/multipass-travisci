@@ -42,7 +42,10 @@ jobs:
           else
             echo "VM: $VM_NAME Yet To Be Provisioned."
           fi
-                    
+          echo "$VM_NAME  provision started"  
+          start=$(date +%s)
+          sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"                  
+
 
   # ubuntu-2004-job:
   #   name: "lxd on ubuntu-20.04"
