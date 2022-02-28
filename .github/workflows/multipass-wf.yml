@@ -32,7 +32,17 @@ jobs:
           pip install -r requirements.txt
           python --version
           export VM_NAME="VM01"
-          echo $VM_NAME
+          export CPU="1"
+          export MEMORY="4G"
+          export DISK="5G"
+          export CLOUD_INIT_FILE="config/cloud-init.yaml"
+          ls -l /var/snap/multipass/common/multipass_socket
+          if [ "$( sudo multipass list | grep -c "$VM_NAME")"   -ne 0  ] 2>/dev/null; then
+            echo "VM: $VM_NAME is Provisioned"
+          else
+            echo "VM: $VM_NAME Yet To Be Provisioned."
+          fi
+                    
 
   # ubuntu-2004-job:
   #   name: "lxd on ubuntu-20.04"
