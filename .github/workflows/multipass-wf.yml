@@ -48,6 +48,7 @@ jobs:
           sudo apt-get install cpu-checker -y
           # use the kvm-ok tool, which is included in the cpu-checker package.
           kvm-ok
+          sudo /usr/sbin/kvm-ok
           #/sbin/check_kvm_support
           #launch failed: The check_kvm_support script failed to start. Ensure it is in multipassd's PATH.
           # sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"                  
