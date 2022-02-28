@@ -1,0 +1,46 @@
+name: "multipass CI workflow"
+
+
+on:
+  push:
+    branches: [ test ]
+
+
+jobs:
+
+  ubuntu-1804-job:
+    name: "lxd onubuntu-18.04"
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: "os fingerprinting"
+      run: hostnamectl status  
+    - name: "snap multipass"
+      run: |
+          snap --version #make sure snap installed
+
+  # ubuntu-2004-job:
+  #   name: "lxd on ubuntu-20.04"
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: "os fingerprinting"
+  #     run: hostnamectl status 
+  #   - name: "lxd testing"
+  #     run: |
+  #       snap list
+  #       # sudo lxd init
+  #       # sudo lxd --version
+
+  # ubuntu-latest-job:
+  #   name: "lxd on ubuntu-latest"
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: "os fingerprinting"
+  #     run: hostnamectl status 
+  #   - name: "lxd testing"
+  #     run: |
+  #       sudo snap install lxd
+  #       sudo lxd init
+  #       sudo lxd --version
