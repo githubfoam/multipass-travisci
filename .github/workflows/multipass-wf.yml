@@ -44,7 +44,11 @@ jobs:
           fi
           echo "$VM_NAME  provision started"  
           start=$(date +%s)
-          sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"                  
+          /sbin/check_kvm_support
+          #launch failed: The check_kvm_support script failed to start. Ensure it is in multipassd's PATH.
+          # sudo multipass launch -c"$CPU" -m"$MEMORY" -d"$DISK" -n "$VM_NAME" lts --cloud-init "$CLOUD_INIT_FILE"                  
+          end=$(date +%s) &&  runtime=$((end-start))
+          echo $runtime
 
 
   # ubuntu-2004-job:
