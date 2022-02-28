@@ -22,9 +22,9 @@ jobs:
           snap info --verbose multipass
           # uses classic confinement, channel latest/stable
           sudo snap install --classic  --channel=stable  multipass
-          # snap list 
-          # snap list --all multipass
-          # snap changes 
+          snap list 
+          snap list --all multipass
+          snap changes 
 
   # ubuntu-2004-job:
   #   name: "lxd on ubuntu-20.04"
