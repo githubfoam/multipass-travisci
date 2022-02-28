@@ -25,6 +25,12 @@ jobs:
           snap list 
           snap list --all multipass
           snap changes 
+          #create virtual python 3 environment
+          pip3 install virtualenv
+          virtualenv -p $(which python3) ~venvpy3
+          source ~venvpy3/bin/activate
+          pip install -r requirements.txt
+          python --version
 
   # ubuntu-2004-job:
   #   name: "lxd on ubuntu-20.04"
